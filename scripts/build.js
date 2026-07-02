@@ -179,6 +179,11 @@ const TELEGRAM_ICON =
 const PHONE_ICON =
   '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1L6.6 10.8Z"/></svg>';
 
+const FAVICON = `<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">`;
+
 // 모바일 플로팅 전화 버튼(전 페이지, 항상 노출) — 탭 시 전화연결
 function floatingCall() {
   return `<a class="fab-call" href="tel:${site.phone.replace(/-/g, "")}" aria-label="전화 예약 ${esc(site.phone)}">${PHONE_ICON}<span class="fab-call__label">전화예약</span></a>`;
@@ -342,6 +347,7 @@ function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, i
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0d14">
 <meta name="color-scheme" content="dark">
+${FAVICON}
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${abs(url)}">
@@ -1034,12 +1040,33 @@ function build() {
   if (fs.existsSync(srcAssets)) fs.cpSync(srcAssets, path.join(DIST, "assets"), { recursive: true });
   fs.copyFileSync(SRC_CSS, path.join(DIST, "assets", "main.css"));
 
+  // 파비콘/아이콘을 루트로 복사(/favicon.ico 관례)
+  ["favicon.ico", "favicon.svg", "apple-touch-icon.png"].forEach((f) => {
+    const src = path.join(srcAssets, f);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(DIST, f));
+  });
+  fs.writeFileSync(
+    path.join(DIST, "site.webmanifest"),
+    JSON.stringify({
+      name: site.brand,
+      short_name: site.brand,
+      icons: [
+        { src: "/favicon.svg", type: "image/svg+xml", sizes: "any" },
+        { src: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" },
+      ],
+      theme_color: "#0a0d14",
+      background_color: "#0a0d14",
+      display: "standalone",
+    })
+  );
+
   // 브랜드 404 (Netlify가 publish/404.html을 자동 서빙)
   fs.writeFileSync(
     path.join(DIST, "404.html"),
     `<!doctype html><html lang="ko"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0d14"><meta name="color-scheme" content="dark">
+${FAVICON}
 <title>페이지를 찾을 수 없습니다 | ${esc(site.brand)}</title>
 <meta name="robots" content="noindex, follow">
 <link rel="stylesheet" href="/assets/main.css">
