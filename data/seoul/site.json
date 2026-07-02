@@ -1,0 +1,22 @@
+{
+  "brand": "간다GO",
+  "brandEn": "GandaGO",
+  "siteUrl": "https://gandago.kr",
+  "defaultOgImage": "/assets/og-default.jpg",
+  "phone": "0508-202-4719",
+  "phoneLabel": "전화예약",
+  "telegram": {
+    "_comment": "TODO: 실제 텔레그램 아이디로 교체하세요. 두 버튼 동일 계정.",
+    "url": "https://t.me/ganda_go",
+    "handle": "@ganda_go"
+  },
+  "inquiries": [
+    { "key": "build", "label": "웹사이트 제작문의" },
+    { "key": "partner", "label": "제휴문의" }
+  ],
+  "foundedYear": "2021",
+  "editorial": {
+    "author": "간다GO 콘텐츠팀",
+    "reviewer": "간다GO 운영팀"
+  }
+}
