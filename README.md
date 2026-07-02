@@ -22,15 +22,25 @@ npm run build   # dist/ 생성
 npm run serve   # http://localhost:4321/seoul/
 ```
 
-## 현재 범위 (1차 골격)
+## 현재 범위 (색인 73페이지)
 
 - 서울 메인 `/seoul/`
-- 5대 생활권 `/seoul/area/<slug>/`
-- 25개 구 `/seoul/<gu-slug>/`
-- `sitemap.xml`, `robots.txt`, 루트 리다이렉트
+- 5대 생활권 `/seoul/area/<slug>/` (5)
+- 25개 구 `/seoul/<gu-slug>/` (25)
+- 생활권(동네) `/seoul/life/<slug>/` (25) — 동네별 고유 성격 본문
+- 이용 장소 `/seoul/use/<slug>/` (7)
+- 예약 전 확인 `/seoul/check/<slug>/` (6)
+- 운영 기준·정책·작성자 소개 `/seoul/policy/<slug>/` (4)
+- `sitemap.xml`(noindex 제외), `robots.txt`, 루트 리다이렉트
 
-지시서의 행정동·생활권·역세권·이용 장소·예약 전 확인 상세 페이지는
-동일한 데이터 구조로 이어서 추가할 수 있도록 설계되었습니다.
+### 도어웨이(doorway) 방지 원칙
+- 지역 페이지는 지역명만 바꾼 클론이 아니라 **생활권별 고유 성격 본문**으로 작성
+- 빌드 시 **본문 500자 미만 페이지는 자동 noindex** 처리(`MIN_INDEX_CHARS`) 후 로그 출력
+- noindex 페이지는 sitemap에서 제외
+- **역세권(역명) 페이지는 의도적으로 생성하지 않음** — 생활권 페이지와 중복돼
+  도어웨이 위험이 가장 크므로 생활권 층으로 흡수
+
+행정동 상세 등 남은 층은 동일한 데이터 구조로 이어서 추가할 수 있습니다.
 
 ## SEO / 정책 반영
 

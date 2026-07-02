@@ -18,9 +18,31 @@ const site = readJSON("site.json");
 const areas = readJSON("areas.json");
 const districts = readJSON("districts.json");
 const content = readJSON("content.json");
+const useCases = readJSON("use-cases.json");
+const checks = readJSON("checks.json");
+const policies = readJSON("policies.json");
+const lifeAreas = readJSON("life-areas.json");
 
 const districtBySlug = Object.fromEntries(districts.map((d) => [d.slug, d]));
 const areaBySlug = Object.fromEntries(areas.map((a) => [a.slug, a]));
+const useBySlug = Object.fromEntries(useCases.map((u) => [u.slug, u]));
+const lifeByArea = {};
+lifeAreas.forEach((l) => {
+  (lifeByArea[l.area] = lifeByArea[l.area] || []).push(l);
+});
+const lifeByDistrict = {};
+lifeAreas.forEach((l) => {
+  (l.districts || []).forEach((d) => {
+    (lifeByDistrict[d] = lifeByDistrict[d] || []).push(l);
+  });
+});
+
+/* 도어웨이 방지: 본문이 얇으면 자동 noindex */
+const MIN_INDEX_CHARS = 500;
+const noindexLog = [];
+function textLen(html) {
+  return [...html.replace(/<[^>]+>/g, "").replace(/\s+/g, "")].length;
+}
 
 /* ------------------------------------------------------------------ */
 /* helpers                                                            */
@@ -105,8 +127,8 @@ const NAV = [
   { label: "서울 홈", path: "/seoul/" },
   { label: "생활권", path: "/seoul/#areas" },
   { label: "구별 안내", path: "/seoul/#districts" },
-  { label: "이용 장소", path: "/seoul/#usecases" },
-  { label: "예약 전 확인", path: "/seoul/#checklist" },
+  { label: "이용 장소", path: "/seoul/use/home/" },
+  { label: "예약 전 확인", path: "/seoul/check/address/" },
 ];
 
 function header() {
@@ -139,6 +161,13 @@ function footer() {
   const areaLinks = areas
     .map((a) => `<li><a href="/seoul/area/${a.slug}/">${esc(a.name)} 안내</a></li>`)
     .join("");
+  const useLinks = useCases
+    .map((u) => `<li><a href="/seoul/use/${u.slug}/">${esc(u.name)}</a></li>`)
+    .join("");
+  const policyLinks = [
+    ...checks.map((c) => `<li><a href="/seoul/check/${c.slug}/">${esc(c.name)}</a></li>`),
+    ...policies.map((p) => `<li><a href="/seoul/policy/${p.slug}/">${esc(p.name)}</a></li>`),
+  ].join("");
   return `<footer class="site-footer"><div class="container">
     <div class="footer-cta">
       <div class="footer-cta__text">
@@ -158,6 +187,8 @@ function footer() {
       </div>
       <div class="footer-col"><h3>5대 생활권</h3><ul>${areaLinks}</ul></div>
       <div class="footer-col"><h3>구별 안내</h3><ul>${guLinks}<li><a href="/seoul/#districts">전체 25개 구 보기</a></li></ul></div>
+      <div class="footer-col"><h3>이용 장소</h3><ul>${useLinks}</ul></div>
+      <div class="footer-col"><h3>예약 전 확인 · 운영 기준</h3><ul>${policyLinks}</ul></div>
     </div>
     <div class="footer-legal">
       <span>© ${site.foundedYear}– ${esc(site.brand)}. 불법·선정적 서비스는 제공·안내하지 않습니다.</span>
@@ -238,13 +269,19 @@ function pricingSchema() {
 /* ------------------------------------------------------------------ */
 /* layout                                                             */
 /* ------------------------------------------------------------------ */
-function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, includeFaqSchema }) {
+function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, includeFaqSchema, forceIndex }) {
+  // 도어웨이 방지: 본문이 얇으면 색인 제외
+  const thin = textLen(body) < MIN_INDEX_CHARS;
+  const noindex = thin && !forceIndex;
+  if (noindex) noindexLog.push(`${url} (본문 ${textLen(body)}자)`);
+
   const graph = [orgSchema, webPageSchema({ title, desc, url, image }), pricingSchema()];
   if (breadcrumb) graph.push(breadcrumbSchema(breadcrumb));
   if (includeFaqSchema) graph.push(faqSchema(content.faq));
   graph.push(...extraSchema);
   const ld = jsonld({ "@context": "https://schema.org", "@graph": graph });
   const ogImg = abs(image || site.defaultOgImage);
+  layout._noindex = noindex;
   return `<!doctype html>
 <html lang="ko">
 <head>
@@ -253,7 +290,7 @@ function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, i
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${abs(url)}">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="${noindex ? "noindex, follow" : "index, follow"}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${esc(site.brand)}">
 <meta property="og:title" content="${esc(title)}">
@@ -429,16 +466,21 @@ ${breadcrumbNav(trail)}
   <h2>포함 구</h2>
   <div class="grid grid--3" style="margin:1.25rem 0 0">${guCards}</div>
 
-  <h2>대표 생활권</h2>
-  <ul class="linklist" style="margin-top:1rem">${a.lifeAreas.map((l) => `<span class="tag">${esc(l)}</span>`).join("")}</ul>
+  <h2>대표 생활권 상세 안내</h2>
+  <div class="grid grid--3" style="margin-top:1rem">${(lifeByArea[a.slug] || [])
+    .map(
+      (l) =>
+        `<a class="card" href="/seoul/life/${l.slug}/"><span class="card__title">${esc(l.name)}</span><p class="card__meta">${esc(l.character.split(".")[0])}.</p></a>`
+    )
+    .join("")}</div>
 
   <h2>대표 지하철역</h2>
   <ul class="linklist" style="margin-top:1rem">${a.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
 
   <h2>이용 장소별 안내</h2>
-  <div class="grid grid--3" style="margin-top:1rem">${content.useCases
+  <div class="grid grid--3" style="margin-top:1rem">${useCases
     .slice(0, 6)
-    .map((u) => `<div class="card"><span class="card__title">${esc(u.label)}</span><p class="card__meta">${esc(u.desc)}</p></div>`)
+    .map((u) => `<a class="card" href="/seoul/use/${u.slug}/"><span class="card__title">${esc(u.name)}</span><p class="card__meta">${esc(u.intro.split(".")[0])}.</p></a>`)
     .join("")}</div>
 
   <h2>예약 전 확인</h2>
@@ -495,7 +537,16 @@ ${breadcrumbNav(trail)}
   <p>${esc(d.intro)}</p>
 
   <h2>대표 생활권</h2>
-  <ul class="linklist" style="margin-top:1rem">${d.lifeAreas.map((l) => `<span class="tag">${esc(l)}</span>`).join("")}</ul>
+  ${
+    (lifeByDistrict[d.slug] || []).length
+      ? `<div class="grid grid--3" style="margin-top:1rem">${(lifeByDistrict[d.slug] || [])
+          .map(
+            (l) =>
+              `<a class="card" href="/seoul/life/${l.slug}/"><span class="card__title">${esc(l.name)}</span><p class="card__meta">${esc(l.character.split(".")[0])}.</p></a>`
+          )
+          .join("")}</div>`
+      : `<ul class="linklist" style="margin-top:1rem">${d.lifeAreas.map((l) => `<span class="tag">${esc(l)}</span>`).join("")}</ul>`
+  }
 
   <h2>대표 행정동</h2>
   <ul class="linklist" style="margin-top:1rem">${d.adminDongs.map((x) => `<span class="tag">${esc(x)}</span>`).join("")}</ul>
@@ -505,10 +556,10 @@ ${breadcrumbNav(trail)}
 
   <h2>이용 장소별 기준</h2>
   <div class="grid grid--2" style="margin-top:1rem">
-    <div class="card"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식, 방문 가능 시간대를 미리 확인합니다.</p></div>
-    <div class="card"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 정책과 객실 출입 가능 여부를 먼저 확인합니다.</p></div>
-    <div class="card"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관, 엘리베이터, 관리 규정을 확인합니다.</p></div>
-    <div class="card"><span class="card__title">${esc(d.focus.split(",")[0].trim())} 기준</span><p class="card__meta">${esc(d.name)}의 생활권 성격에 맞춰 방문 주소와 이동 기준을 확인합니다.</p></div>
+    <a class="card" href="/seoul/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식, 방문 가능 시간대를 미리 확인합니다.</p></a>
+    <a class="card" href="/seoul/use/hotel/"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 정책과 객실 출입 가능 여부를 먼저 확인합니다.</p></a>
+    <a class="card" href="/seoul/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관, 엘리베이터, 관리 규정을 확인합니다.</p></a>
+    <a class="card" href="/seoul/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">${esc(d.name)}의 가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
   </div>
 
   <h2 id="checklist">예약 전 체크리스트</h2>
@@ -526,11 +577,239 @@ ${breadcrumbNav(trail)}
     <a href="/seoul/">서울 전체 지역 안내</a>
     <a href="/seoul/area/${area.slug}/">${esc(area.name)} 생활권 안내</a>
     ${nearbyGu}
+    <a href="/seoul/check/address/">방문 주소 확인</a>
+    <a href="/seoul/check/building-access/">건물 출입 방식 확인</a>
   </nav>
 </div></section>
 `;
 
   return layout({ title, desc, url, breadcrumb: trail, body, includeFaqSchema: true });
+}
+
+/* ------------------------------------------------------------------ */
+/* page: life-area /seoul/life/<slug>/                                */
+/* ------------------------------------------------------------------ */
+function lifePage(l) {
+  const url = `/seoul/life/${l.slug}/`;
+  const area = areaBySlug[l.area];
+  const parentGus = (l.districts || []).map((s) => districtBySlug[s]).filter(Boolean);
+  const title = `${l.name} 출장마사지 생활권 안내 | ${site.brand}`;
+  const desc = clamp80(`${l.name} 생활권 안내 · 가까운 역과 이용 장소, 예약 전 확인사항을 정리했습니다.`, url);
+  const trail = [
+    { name: "서울", path: "/seoul/" },
+    { name: area.name, path: `/seoul/area/${area.slug}/` },
+    { name: l.name, path: url },
+  ];
+
+  const typeGuide = {
+    business: "업무지구 성격이 강해 건물 보안 게이트, 방문증, 엘리베이터 인증 등 출입 절차를 미리 확인하는 것이 좋습니다.",
+    residential: "주거 생활권으로 공동현관 방식과 동·호수, 방문 가능 시간대를 정확히 안내하면 이동이 원활합니다.",
+    commercial: "상권과 오피스텔이 섞여 있어 도로명 주소와 건물명, 층·호실을 함께 확인하는 것이 좋습니다.",
+    nightlife: "숙소와 상권이 밀집해 숙소 방문 정책과 야간 예약 가능 시간을 함께 확인하는 것이 좋습니다.",
+    university: "대학가 원룸·오피스텔이 많아 비슷한 건물이 이어지므로 건물명과 호수, 공동현관 방식을 정확히 확인해야 합니다.",
+    downtown: "도심 업무지구로 오피스 보안과 호텔 방문 정책이 함께 있어 방문 유형에 따라 확인 사항이 다릅니다.",
+    transit: "환승 거점이라 출구별 도보 거리 차이가 크므로 가까운 출구와 정확한 건물 주소를 함께 확인하는 것이 좋습니다.",
+    lodging: "호텔·숙소 비중이 높아 객실 출입 가능 여부와 로비 확인 절차를 먼저 확인하는 것이 좋습니다.",
+  };
+
+  const siblings = (lifeByArea[l.area] || [])
+    .filter((x) => x.slug !== l.slug)
+    .slice(0, 4)
+    .map((x) => `<a href="/seoul/life/${x.slug}/">${esc(x.name)} 생활권 안내</a>`)
+    .join("");
+
+  const body = `
+${breadcrumbNav(trail)}
+<section class="hero"><div class="container hero__inner">
+  <span class="eyebrow">${esc(area.name)} · 생활권</span>
+  <h1>${esc(l.name)} 출장마사지 생활권 안내</h1>
+  <p>${esc(l.character.split(".")[0])}.</p>
+  <div class="hero__cta">
+    ${parentGus[0] ? `<a class="btn btn--ghost" href="/seoul/${parentGus[0].slug}/">${esc(parentGus[0].name)} 안내</a>` : ""}
+    <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
+  </div>
+</div></section>
+
+<section class="section"><div class="container prose">
+  <h2>${esc(l.name)} 생활권 개요</h2>
+  <p>${esc(l.character)}</p>
+
+  <h2>포함 행정구</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="포함 구">${parentGus
+    .map((g) => `<a href="/seoul/${g.slug}/">${esc(g.name)} 생활권 안내</a>`)
+    .join("")}</nav>
+
+  <h2>가까운 지하철역</h2>
+  <ul class="linklist" style="margin-top:1rem">${l.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
+
+  <h2>포함 행정동</h2>
+  <ul class="linklist" style="margin-top:1rem">${l.dongs.map((x) => `<span class="tag">${esc(x)}</span>`).join("")}</ul>
+
+  <h2>${esc(l.name)} 이용 시 확인할 점</h2>
+  <p>${esc(typeGuide[l.type] || typeGuide.residential)}</p>
+  <div class="grid grid--3" style="margin-top:1rem">
+    <a class="card" href="/seoul/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식을 미리 확인합니다.</p></a>
+    <a class="card" href="/seoul/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관·엘리베이터 인증과 관리 규정을 확인합니다.</p></a>
+    <a class="card" href="/seoul/use/hotel/"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 방문 정책과 객실 출입 여부를 확인합니다.</p></a>
+  </div>
+
+  <h2 id="checklist">예약 전 체크리스트</h2>
+  <div style="margin-top:1rem;max-width:720px">${checklistBlock()}</div>
+  <div class="notice" style="margin-top:1.25rem">개인정보는 예약 확인과 연락에 필요한 최소 정보만 안내하며, 불법·선정적 서비스는 제공하거나 안내하지 않습니다.</div>
+
+  <h2>자주 묻는 질문</h2>
+  <div style="margin-top:1rem;max-width:760px">${faqBlock()}</div>
+
+  <h2>${esc(l.name)} 안내 기준</h2>
+  <div style="margin-top:1rem">${whoHowWhy(l.name)}</div>
+
+  <h2>인접 생활권 보기</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="인접 생활권">
+    <a href="/seoul/area/${area.slug}/">${esc(area.name)} 전체 보기</a>
+    ${siblings}
+  </nav>
+</div></section>
+`;
+  return layout({ title, desc, url, breadcrumb: trail, body, includeFaqSchema: true });
+}
+
+/* ------------------------------------------------------------------ */
+/* page: use-case /seoul/use/<slug>/                                  */
+/* ------------------------------------------------------------------ */
+function usePage(u) {
+  const url = `/seoul/use/${u.slug}/`;
+  const title = `${u.h1} | ${site.brand}`;
+  const desc = clamp80(`${u.name} 전 확인할 점과 서울 지역별 기준을 안내합니다.`, url);
+  const trail = [
+    { name: "서울", path: "/seoul/" },
+    { name: "이용 장소", path: "/seoul/use/home/" },
+    { name: u.name, path: url },
+  ];
+  const related = (u.relatedUse || [])
+    .map((s) => useBySlug[s])
+    .filter(Boolean)
+    .map((x) => `<a href="/seoul/use/${x.slug}/">${esc(x.name)} 안내</a>`)
+    .join("");
+
+  const body = `
+${breadcrumbNav(trail)}
+<section class="hero"><div class="container hero__inner">
+  <span class="eyebrow">이용 장소 안내</span>
+  <h1>${esc(u.h1)}</h1>
+  <p>${esc(u.intro.split(".")[0])}.</p>
+</div></section>
+
+<section class="section"><div class="container prose">
+  <h2>${esc(u.name)}, 왜 확인이 필요한가요?</h2>
+  <p>${esc(u.intro)}</p>
+
+  <h2>예약 전 확인 항목</h2>
+  <ul class="checklist" style="margin-top:1rem;max-width:720px">${u.checks.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>
+
+  <h2>서울 전 지역 공통 체크리스트</h2>
+  <div style="margin-top:1rem;max-width:720px">${checklistBlock()}</div>
+  <div class="notice" style="margin-top:1.25rem">불법·선정적 서비스는 제공하거나 안내하지 않으며, 실제 방문 주소와 출입 방식을 함께 확인합니다.</div>
+
+  <h2>자주 묻는 질문</h2>
+  <div style="margin-top:1rem;max-width:760px">${faqBlock()}</div>
+
+  <h2>관련 이용 안내</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="관련 이용 안내">
+    ${related}
+    <a href="/seoul/check/address/">방문 주소 확인</a>
+    <a href="/seoul/">서울 전체 지역 안내</a>
+  </nav>
+</div></section>
+`;
+  return layout({ title, desc, url, breadcrumb: trail, body, includeFaqSchema: true, forceIndex: true });
+}
+
+/* ------------------------------------------------------------------ */
+/* page: check /seoul/check/<slug>/                                   */
+/* ------------------------------------------------------------------ */
+function checkPage(c) {
+  const url = `/seoul/check/${c.slug}/`;
+  const title = `${c.h1} | ${site.brand}`;
+  const desc = clamp80(`${c.name} · 서울 예약 전 확인해야 할 기준을 안내합니다.`, url);
+  const trail = [
+    { name: "서울", path: "/seoul/" },
+    { name: "예약 전 확인", path: "/seoul/check/address/" },
+    { name: c.name, path: url },
+  ];
+  const others = checks
+    .filter((x) => x.slug !== c.slug)
+    .slice(0, 4)
+    .map((x) => `<a href="/seoul/check/${x.slug}/">${esc(x.name)}</a>`)
+    .join("");
+
+  const body = `
+${breadcrumbNav(trail)}
+<section class="hero"><div class="container hero__inner">
+  <span class="eyebrow">예약 전 확인</span>
+  <h1>${esc(c.h1)}</h1>
+  <p>${esc(c.intro.split(".")[0])}.</p>
+</div></section>
+
+<section class="section"><div class="container prose">
+  <h2>${esc(c.name)}가 왜 중요한가요?</h2>
+  <p>${esc(c.intro)}</p>
+
+  <h2>확인 방법</h2>
+  <ul class="checklist" style="margin-top:1rem;max-width:720px">${c.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
+
+  <h2>서울 전 지역 공통 체크리스트</h2>
+  <div style="margin-top:1rem;max-width:720px">${checklistBlock()}</div>
+
+  <h2>자주 묻는 질문</h2>
+  <div style="margin-top:1rem;max-width:760px">${faqBlock()}</div>
+
+  <h2>다른 확인 항목</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="다른 확인 항목">
+    ${others}
+    <a href="/seoul/policy/privacy/">개인정보 처리방침</a>
+    <a href="/seoul/policy/service-policy/">불법·선정적 서비스 불가 안내</a>
+  </nav>
+</div></section>
+`;
+  return layout({ title, desc, url, breadcrumb: trail, body, includeFaqSchema: true, forceIndex: true });
+}
+
+/* ------------------------------------------------------------------ */
+/* page: policy /seoul/policy/<slug>/                                 */
+/* ------------------------------------------------------------------ */
+function policyPage(p) {
+  const url = `/seoul/policy/${p.slug}/`;
+  const title = `${p.h1} | ${site.brand}`;
+  const desc = clamp80(p.desc, url);
+  const trail = [
+    { name: "서울", path: "/seoul/" },
+    { name: "운영 기준", path: "/seoul/policy/privacy/" },
+    { name: p.name, path: url },
+  ];
+  const others = policies
+    .filter((x) => x.slug !== p.slug)
+    .map((x) => `<a href="/seoul/policy/${x.slug}/">${esc(x.name)}</a>`)
+    .join("");
+
+  const body = `
+${breadcrumbNav(trail)}
+<section class="hero"><div class="container hero__inner">
+  <span class="eyebrow">운영 기준</span>
+  <h1>${esc(p.h1)}</h1>
+  <p>${esc(p.desc)}</p>
+</div></section>
+
+<section class="section"><div class="container prose">
+  ${p.sections.map((s) => `<h2>${esc(s.h)}</h2><p>${esc(s.p)}</p>`).join("")}
+
+  <h2>관련 안내</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="관련 안내">
+    ${others}
+    <a href="/seoul/">서울 전체 지역 안내</a>
+  </nav>
+</div></section>
+`;
+  return layout({ title, desc, url, breadcrumb: trail, body, forceIndex: true });
 }
 
 /* ------------------------------------------------------------------ */
@@ -543,8 +822,10 @@ function writePage(relDir, html) {
 }
 
 const urls = [];
-function record(p) {
-  urls.push(p);
+// html은 layout()이 생성하면서 layout._noindex를 설정한다. noindex 페이지는 sitemap에서 제외.
+function emit(relDir, url, html) {
+  writePage(relDir, html);
+  if (!layout._noindex) urls.push(url);
 }
 
 /* ------------------------------------------------------------------ */
@@ -566,18 +847,14 @@ function build() {
 </head><body><p><a href="/seoul/">서울 지역 안내로 이동</a></p></body></html>`
   );
 
-  writePage("seoul", mainPage());
-  record("/seoul/");
+  emit("seoul", "/seoul/", mainPage());
 
-  areas.forEach((a) => {
-    writePage(path.join("seoul", "area", a.slug), areaPage(a));
-    record(`/seoul/area/${a.slug}/`);
-  });
-
-  districts.forEach((d) => {
-    writePage(path.join("seoul", d.slug), districtPage(d));
-    record(`/seoul/${d.slug}/`);
-  });
+  areas.forEach((a) => emit(path.join("seoul", "area", a.slug), `/seoul/area/${a.slug}/`, areaPage(a)));
+  districts.forEach((d) => emit(path.join("seoul", d.slug), `/seoul/${d.slug}/`, districtPage(d)));
+  lifeAreas.forEach((l) => emit(path.join("seoul", "life", l.slug), `/seoul/life/${l.slug}/`, lifePage(l)));
+  useCases.forEach((u) => emit(path.join("seoul", "use", u.slug), `/seoul/use/${u.slug}/`, usePage(u)));
+  checks.forEach((c) => emit(path.join("seoul", "check", c.slug), `/seoul/check/${c.slug}/`, checkPage(c)));
+  policies.forEach((p) => emit(path.join("seoul", "policy", p.slug), `/seoul/policy/${p.slug}/`, policyPage(p)));
 
   // sitemap.xml
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -597,13 +874,18 @@ ${urls
     `User-agent: *\nAllow: /\n\nSitemap: ${abs("/sitemap.xml")}\n`
   );
 
-  console.log(`✔ 빌드 완료: ${urls.length}개 색인 페이지 + 루트 리다이렉트`);
-  console.log(`  · 메인 1 · 생활권 ${areas.length} · 구 ${districts.length}`);
-  if (warnings.length) {
-    console.log("\n" + warnings.join("\n"));
-  } else {
-    console.log("  · 모든 meta description 80자 이내 ✓");
-  }
+  console.log(`✔ 빌드 완료: 색인 ${urls.length}개 (+ 루트 리다이렉트)`);
+  console.log(
+    `  · 메인 1 · 생활권(권역) ${areas.length} · 구 ${districts.length} · 생활권(동네) ${lifeAreas.length} · 이용 장소 ${useCases.length} · 예약 전 확인 ${checks.length} · 운영 기준 ${policies.length}`
+  );
+  console.log(
+    warnings.length ? "\n" + warnings.join("\n") : "  · 모든 meta description 80자 이내 ✓"
+  );
+  console.log(
+    noindexLog.length
+      ? `  · 도어웨이 방지 noindex ${noindexLog.length}개: ${noindexLog.join(", ")}`
+      : "  · thin-content noindex 대상 없음 ✓"
+  );
 }
 
 build();

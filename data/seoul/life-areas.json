@@ -1,0 +1,127 @@
+[
+  {
+    "slug": "gangnam-yeoksam", "name": "강남역·역삼", "area": "gangnam-southeast", "districts": ["gangnam-gu"],
+    "stations": ["강남역", "역삼역"], "dongs": ["역삼동", "논현동"], "type": "business",
+    "character": "강남역·역삼은 대형 오피스와 오피스텔이 밀집한 서울 대표 업무지구입니다. 낮에는 회사, 밤에는 오피스텔 방문 비중이 높아 건물 보안 게이트와 엘리베이터 인증, 방문증 절차를 미리 확인하는 것이 좋습니다. 강남대로를 따라 출구별 도보 거리가 크게 달라 정확한 건물 주소 확인이 중요합니다."
+  },
+  {
+    "slug": "samseong-seolleung", "name": "삼성·선릉", "area": "gangnam-southeast", "districts": ["gangnam-gu"],
+    "stations": ["삼성역", "선릉역"], "dongs": ["삼성동", "대치동"], "type": "business",
+    "character": "삼성·선릉은 코엑스와 대형 오피스가 이어지는 업무·전시 중심 생활권입니다. 오피스텔과 호텔이 함께 있어 방문 유형에 따라 로비 확인 절차가 다르며, 전시·행사 기간에는 인근 이동이 혼잡해 여유 있는 시간 조율이 좋습니다."
+  },
+  {
+    "slug": "cheongdam-apgujeong", "name": "청담·압구정", "area": "gangnam-southeast", "districts": ["gangnam-gu"],
+    "stations": ["압구정로데오역", "청담역"], "dongs": ["청담동", "압구정동"], "type": "residential",
+    "character": "청담·압구정은 고급 주거와 상권이 어우러진 생활권입니다. 단독·빌라·주상복합이 섞여 있어 출입구와 주차 동선이 제각각이므로, 방문 전 공동현관 방식과 차량 대기 공간을 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "nonhyeon-sinsa", "name": "논현·신사", "area": "gangnam-southeast", "districts": ["gangnam-gu"],
+    "stations": ["신사역", "논현역"], "dongs": ["논현동", "신사동"], "type": "commercial",
+    "character": "논현·신사는 가로수길을 중심으로 상권과 오피스텔, 주거가 촘촘히 섞인 생활권입니다. 골목 단위로 건물이 밀집해 도로명 주소와 건물명을 함께 확인해야 이동이 원활합니다."
+  },
+  {
+    "slug": "jamsil-songpa", "name": "잠실·송파", "area": "gangnam-southeast", "districts": ["songpa-gu"],
+    "stations": ["잠실역", "잠실새내역"], "dongs": ["잠실동", "신천동"], "type": "residential",
+    "character": "잠실·송파는 대단지 아파트와 호텔·상권이 함께하는 생활권입니다. 대단지는 동·호수와 지상·지하 출입구 위치를 정확히 안내하면 이동 시간이 크게 줄고, 인접 호텔은 외부인 방문 정책을 먼저 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "munjeong-garak", "name": "문정·가락", "area": "gangnam-southeast", "districts": ["songpa-gu"],
+    "stations": ["문정역", "가락시장역"], "dongs": ["문정동", "가락동"], "type": "business",
+    "character": "문정·가락은 법조단지와 지식산업센터, 유통 시설이 모인 업무 생활권입니다. 지식산업센터는 층·호실이 많고 보안이 엄격해 정확한 호실과 출입 절차를 미리 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "hongdae-hapjeong", "name": "홍대·합정", "area": "northwest", "districts": ["mapo-gu"],
+    "stations": ["홍대입구역", "합정역"], "dongs": ["서교동", "합정동"], "type": "nightlife",
+    "character": "홍대·합정은 상권과 숙소, 대학가가 겹치는 서북권 대표 생활권입니다. 게스트하우스와 호텔이 많아 숙소 방문 정책과 객실 출입 가능 여부를 먼저 확인해야 하고, 야간 이용이 많은 만큼 예약 가능 시간을 함께 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "gongdeok-mapo", "name": "공덕·마포", "area": "northwest", "districts": ["mapo-gu"],
+    "stations": ["공덕역", "마포역"], "dongs": ["공덕동", "도화동"], "type": "business",
+    "character": "공덕·마포는 여러 노선이 교차하는 환승 업무지구로, 오피스와 오피스텔이 밀집해 있습니다. 환승 인구가 많아 출구별 동선을 미리 확인하면 이동이 수월합니다."
+  },
+  {
+    "slug": "yeouido-yeongdeungpo", "name": "여의도·영등포", "area": "southwest", "districts": ["yeongdeungpo-gu"],
+    "stations": ["여의도역", "영등포역"], "dongs": ["여의도동", "영등포동"], "type": "business",
+    "character": "여의도는 금융·방송 오피스가 밀집한 업무지구로 보안 절차가 엄격하고, 인접한 영등포는 상권과 주거·숙소가 섞여 있습니다. 여의도 오피스는 방문증과 로비 확인이 필요한 경우가 많아 미리 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "mullae-dangsan", "name": "문래·당산", "area": "southwest", "districts": ["yeongdeungpo-gu"],
+    "stations": ["문래역", "당산역"], "dongs": ["문래동", "당산동"], "type": "commercial",
+    "character": "문래·당산은 예술창작촌과 오피스텔, 주거가 어우러진 생활권입니다. 리모델링 건물과 창작 공간이 섞여 있어 건물명과 출입구를 함께 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "gudi-gadi", "name": "구디·가디", "area": "southwest", "districts": ["guro-gu", "geumcheon-gu"],
+    "stations": ["구로디지털단지역", "가산디지털단지역"], "dongs": ["구로동", "가산동"], "type": "business",
+    "character": "구디·가디는 대규모 지식산업센터와 오피스가 밀집한 산업·업무 생활권입니다. 단지 규모가 크고 동·게이트가 많아 정확한 단지명과 층·호실, 출입 절차 확인이 특히 중요합니다."
+  },
+  {
+    "slug": "magok-balsan", "name": "마곡·발산", "area": "southwest", "districts": ["gangseo-gu"],
+    "stations": ["마곡역", "발산역"], "dongs": ["마곡동", "내발산동"], "type": "business",
+    "character": "마곡·발산은 대기업 연구단지와 신축 오피스텔이 밀집한 신흥 업무지구입니다. 신축 건물이 많아 도로명 주소와 상가·주거 분리 여부, 엘리베이터 인증을 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "seongsu-wangsimni", "name": "성수·왕십리", "area": "northeast", "districts": ["seongdong-gu"],
+    "stations": ["성수역", "왕십리역"], "dongs": ["성수동", "행당동"], "type": "commercial",
+    "character": "성수·왕십리는 오래된 공장 지대가 오피스와 상권으로 빠르게 바뀐 생활권입니다. 리모델링 건물과 지식산업센터가 섞여 있어 건물명과 출입 방식이 제각각이므로 정확한 주소 확인이 중요합니다."
+  },
+  {
+    "slug": "kondae-gwangjin", "name": "건대·광진", "area": "northeast", "districts": ["gwangjin-gu"],
+    "stations": ["건대입구역", "구의역"], "dongs": ["화양동", "구의동"], "type": "university",
+    "character": "건대·광진은 대학가와 상권, 원룸·오피스텔이 밀집한 생활권입니다. 원룸 밀집 지역은 건물이 비슷하게 생긴 경우가 많아 건물명과 호수, 공동현관 방식을 정확히 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "yongsan-seoul-station", "name": "용산·서울역", "area": "central", "districts": ["yongsan-gu"],
+    "stations": ["용산역", "서울역"], "dongs": ["한강로동", "갈월동"], "type": "lodging",
+    "character": "용산·서울역은 대형 호텔과 오피스, 교통 거점이 모인 생활권입니다. 호텔 비중이 높아 객실 출입 가능 여부와 로비 확인 절차를 먼저 확인해야 하며, 신축 주상복합은 상가동·주거동 출입구가 분리된 곳이 많습니다."
+  },
+  {
+    "slug": "hannam-itaewon", "name": "한남·이태원", "area": "central", "districts": ["yongsan-gu"],
+    "stations": ["이태원역", "한강진역"], "dongs": ["이태원동", "한남동"], "type": "lodging",
+    "character": "한남·이태원은 외국인 거주와 숙소, 상권이 어우러진 생활권입니다. 경사진 골목과 빌라·주상복합이 많아 출입구 위치와 차량 접근성을 미리 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "mokdong-yangcheon", "name": "목동·양천", "area": "southwest", "districts": ["yangcheon-gu"],
+    "stations": ["목동역", "오목교역"], "dongs": ["목동", "신정동"], "type": "residential",
+    "character": "목동·양천은 대단지 아파트와 학원가가 중심인 주거 생활권입니다. 단지 규모가 커 동·출입구 위치와 방문 가능 시간대를 미리 확인하면 이동이 원활합니다."
+  },
+  {
+    "slug": "sillim-seoul-univ", "name": "신림·서울대입구", "area": "southwest", "districts": ["gwanak-gu"],
+    "stations": ["신림역", "서울대입구역"], "dongs": ["신림동", "봉천동"], "type": "university",
+    "character": "신림·서울대입구는 대학가와 원룸·고시촌이 밀집한 주거 생활권입니다. 언덕과 골목이 많고 비슷한 건물이 이어져, 건물명과 호수, 공동현관 방식을 정확히 확인하는 것이 특히 중요합니다."
+  },
+  {
+    "slug": "sadang-isu", "name": "사당·이수", "area": "southwest", "districts": ["dongjak-gu"],
+    "stations": ["사당역", "이수역"], "dongs": ["사당동", "동작동"], "type": "transit",
+    "character": "사당·이수는 여러 노선이 만나는 환승 거점이자 주거 생활권입니다. 환승 인구가 많아 출구별 도보 거리 차이가 크므로 가까운 출구와 정확한 건물 주소를 함께 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "yeonsinnae-eunpyeong", "name": "연신내·은평", "area": "northwest", "districts": ["eunpyeong-gu"],
+    "stations": ["연신내역", "불광역"], "dongs": ["불광동", "대조동"], "type": "residential",
+    "character": "연신내·은평은 상권과 대단지 주거가 함께하는 서북부 생활권입니다. 도심과 이동 거리가 있어 안내 가능 시간과 이동 기준을 함께 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "nowon-sanggye", "name": "노원·상계", "area": "northeast", "districts": ["nowon-gu"],
+    "stations": ["노원역", "상계역"], "dongs": ["상계동", "중계동"], "type": "residential",
+    "character": "노원·상계는 대단지 아파트와 학원가가 밀집한 북부 주거 생활권입니다. 단지가 넓고 동이 많아 정확한 동·호수와 출입구 안내가 이동 시간을 크게 줄입니다."
+  },
+  {
+    "slug": "sangbong-jungnang", "name": "상봉·중랑", "area": "northeast", "districts": ["jungnang-gu"],
+    "stations": ["상봉역", "면목역"], "dongs": ["상봉동", "면목동"], "type": "residential",
+    "character": "상봉·중랑은 상권과 주거가 어우러진 동북부 생활권입니다. 다세대·빌라가 많아 건물명과 호수, 공동현관 방식을 정확히 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "jongno-gwanghwamun", "name": "종로·광화문", "area": "central", "districts": ["jongno-gu"],
+    "stations": ["광화문역", "종로3가역"], "dongs": ["종로1·2·3·4가동", "청진동"], "type": "downtown",
+    "character": "종로·광화문은 대형 오피스와 호텔이 밀집한 서울 도심 업무지구입니다. 오피스 보안 절차와 호텔 방문 정책이 함께 있어 방문 유형에 따라 확인 사항이 다릅니다."
+  },
+  {
+    "slug": "myeongdong-euljiro", "name": "명동·을지로", "area": "central", "districts": ["jung-gu"],
+    "stations": ["을지로입구역", "명동역"], "dongs": ["명동", "을지로동"], "type": "lodging",
+    "character": "명동·을지로는 관광 상권과 호텔이 밀집한 생활권입니다. 호텔·숙소 비중이 매우 높아 객실 출입 가능 여부와 로비 확인 절차를 먼저 확인하는 것이 좋습니다."
+  },
+  {
+    "slug": "dongdaemun-cheongnyangni", "name": "동대문·청량리", "area": "northeast", "districts": ["dongdaemun-gu"],
+    "stations": ["청량리역", "회기역"], "dongs": ["청량리동", "전농동"], "type": "transit",
+    "character": "동대문·청량리는 여러 노선이 교차하는 교통 거점이자 상권·주거 생활권입니다. 환승 인구가 많고 상가와 주거가 섞여 있어 정확한 건물 주소와 출입구 확인이 중요합니다."
+  }
+]
