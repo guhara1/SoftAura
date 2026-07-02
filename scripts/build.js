@@ -650,7 +650,7 @@ ${hero(`
     return d.adminDongs
       .map((x) =>
         pageByName[x]
-          ? `<a href="/${d.slug}/${pageByName[x].slug}/">${esc(x)} 방문 안내</a>`
+          ? `<a href="/${d.slug}/${pageByName[x].slug}/">${esc(x)}</a>`
           : `<span class="tag">${esc(x)}</span>`
       )
       .join("");
@@ -772,7 +772,7 @@ ${hero(`
     (dongsByLife[l.slug] || []).length
       ? `<h2>${esc(l.name)} 주요 행정동</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="주요 행정동">${(dongsByLife[l.slug] || [])
-          .map((dg) => `<a href="/${dg.district}/${dg.slug}/">${esc(dg.name)} 방문 안내</a>`)
+          .map((dg) => `<a href="/${dg.district}/${dg.slug}/">${esc(dg.name)}</a>`)
           .join("")}</nav>`
       : ""
   }
@@ -981,7 +981,7 @@ function adminDongPage(dong) {
   const siblings = (dongsByDistrict[dong.district] || [])
     .filter((x) => x.slug !== dong.slug)
     .slice(0, 5)
-    .map((x) => `<a href="/${gu.slug}/${x.slug}/">${esc(x.name)} 방문 안내</a>`)
+    .map((x) => `<a href="/${gu.slug}/${x.slug}/">${esc(x.name)}</a>`)
     .join("");
 
   const body = `
