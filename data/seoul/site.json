@@ -7,6 +7,8 @@
   "heroImageAlt": "은은한 조명과 도심 야경이 보이는 프리미엄 방문 케어 공간 안내 이미지",
   "phone": "0508-202-4719",
   "phoneLabel": "전화예약",
+  "naverVerification": "eb1f255543e71fcb0074dfe171c4d68c86fe1d15",
+  "googleVerification": "",
   "telegram": {
     "_comment": "TODO: 실제 텔레그램 아이디로 교체하세요. 두 버튼 동일 계정.",
     "url": "https://t.me/ganda_go",

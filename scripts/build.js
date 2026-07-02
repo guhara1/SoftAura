@@ -185,7 +185,15 @@ const PHONE_ICON =
 const FAVICON = `<link rel="icon" href="/favicon.ico" sizes="32x32">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">`;
+<link rel="manifest" href="/site.webmanifest">
+<link rel="alternate" type="application/rss+xml" title="${esc(site.brand)} 최신 안내" href="/rss.xml">`;
+
+const SITE_VERIFY = [
+  site.naverVerification ? `<meta name="naver-site-verification" content="${esc(site.naverVerification)}">` : "",
+  site.googleVerification ? `<meta name="google-site-verification" content="${esc(site.googleVerification)}">` : "",
+]
+  .filter(Boolean)
+  .join("\n");
 
 // 모바일 플로팅 전화 버튼(전 페이지, 항상 노출) — 탭 시 전화연결
 function floatingCall() {
@@ -290,10 +298,70 @@ function stationTags(names) {
     .join("");
 }
 
+// 롱테일 내부링크: 지역명 + 주제로 이용/확인 허브에 연결(유형별로 다르게)
+const LONGTAIL = {
+  business: [["/use/business-district/", "업무지구 방문 이용 기준"], ["/use/officetel/", "오피스텔 방문 확인사항"]],
+  downtown: [["/use/business-district/", "도심 업무지구 이용 기준"], ["/use/hotel/", "호텔·숙소 이용 기준"]],
+  industrial: [["/use/business-district/", "업무지구 방문 이용 기준"], ["/check/building-access/", "건물 출입 방식 확인"]],
+  lodging: [["/use/hotel/", "호텔·숙소 이용 기준"], ["/check/building-access/", "건물 출입 방식 확인"]],
+  nightlife: [["/use/hotel/", "호텔·숙소 이용 기준"], ["/use/night/", "야간 예약 이용 안내"]],
+  university: [["/use/officetel/", "오피스텔 방문 확인사항"], ["/check/building-access/", "건물 출입 방식 확인"]],
+  residential: [["/use/officetel/", "오피스텔 방문 확인사항"], ["/check/time/", "예약 가능 시간 확인"]],
+  transit: [["/use/station-area/", "역세권 방문 이용 안내"], ["/check/travel-fee/", "추가 이동비 기준 확인"]],
+  commercial: [["/use/station-area/", "역세권 방문 이용 안내"], ["/check/building-access/", "건물 출입 방식 확인"]],
+  culture: [["/use/station-area/", "역세권 방문 이용 안내"], ["/use/night/", "야간 예약 이용 안내"]],
+};
+function longtailLinks(name, type) {
+  const items = [
+    ["/use/home/", "자택 방문 이용 안내"],
+    ...(LONGTAIL[type] || LONGTAIL.residential),
+    ["/check/address/", "예약 전 방문 주소 확인"],
+  ];
+  return `<nav class="linklist" style="margin-top:1rem" aria-label="함께 보면 좋은 안내">${items
+    .map(([u, t]) => `<a href="${u}">${esc(name)} ${esc(t)}</a>`)
+    .join("")}</nav>`;
+}
+function guType(d) {
+  const f = d.focus || "";
+  if (/업무|산업/.test(f)) return "business";
+  if (/숙소|관광|외국인/.test(f)) return "lodging";
+  if (/대학/.test(f)) return "university";
+  if (/상권/.test(f)) return "commercial";
+  return "residential";
+}
+
 const won = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 function stars(n) {
   return `<span class="stars" aria-label="별점 ${n}점 만점에 5점">${"★".repeat(n)}<span class="stars__off">${"★".repeat(5 - n)}</span></span>`;
+}
+
+// 후기/평점 구조화 데이터 — 후기가 실제로 노출되는 메인 페이지에만 부착
+function reviewSchema() {
+  const rv = content.reviews || [];
+  if (!rv.length) return null;
+  const avg = (rv.reduce((s, r) => s + r.rating, 0) / rv.length).toFixed(1);
+  return {
+    "@type": "Service",
+    name: `${site.brand} 서울 방문 케어`,
+    serviceType: "방문 케어",
+    provider: { "@type": "Organization", name: site.brand, url: site.siteUrl },
+    areaServed: { "@type": "City", name: "서울" },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: avg,
+      reviewCount: rv.length,
+      bestRating: "5",
+      worstRating: "1",
+    },
+    review: rv.map((r) => ({
+      "@type": "Review",
+      author: { "@type": "Person", name: r.name },
+      datePublished: r.date,
+      reviewRating: { "@type": "Rating", ratingValue: String(r.rating), bestRating: "5", worstRating: "1" },
+      reviewBody: r.text,
+    })),
+  };
 }
 
 function reviewsSection() {
@@ -391,6 +459,7 @@ function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, i
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0d14">
 <meta name="color-scheme" content="dark">
+${SITE_VERIFY}
 ${FAVICON}
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
@@ -520,6 +589,23 @@ ${breadcrumbNav([{ name: "서울", path: "/" }])}
   <div class="grid grid--3" style="margin-top:1.5rem">${useCards}</div>
 </div></section>
 
+<section class="section alt" id="guides"><div class="container">
+  <span class="eyebrow">자주 찾는 안내</span>
+  <h2>상황별 방문 안내 바로가기</h2>
+  <nav class="linklist" style="margin-top:1.5rem" aria-label="상황별 안내">
+    <a href="/station/gangnam-station/">강남역 역세권 방문 이용 안내</a>
+    <a href="/station/hongik-univ-station/">홍대입구역 숙소 인접 역세권 안내</a>
+    <a href="/life/yeouido-yeongdeungpo/">여의도 업무지구 오피스텔 방문 안내</a>
+    <a href="/life/jamsil-songpa/">잠실 대단지 방문 확인사항</a>
+    <a href="/life/seongsu-wangsimni/">성수 상권 방문 이용 안내</a>
+    <a href="/use/hotel/">호텔·숙소 출장마사지 이용 기준</a>
+    <a href="/use/officetel/">오피스텔 방문 확인사항</a>
+    <a href="/use/night/">야간 예약 이용 안내</a>
+    <a href="/check/address/">예약 전 방문 주소 확인</a>
+    <a href="/check/building-access/">건물 출입 방식 확인</a>
+  </nav>
+</div></section>
+
 ${reviewsSection()}
 
 <section class="section" id="checklist"><div class="container">
@@ -548,6 +634,7 @@ ${reviewsSection()}
     breadcrumb: [{ name: "서울", path: "/" }],
     body,
     includeFaqSchema: true,
+    extraSchema: [reviewSchema()].filter(Boolean),
   });
 }
 
@@ -705,6 +792,9 @@ ${hero(`
   <h2>${esc(d.name)} 안내 기준</h2>
   <div style="margin-top:1rem">${whoHowWhy(d.name)}</div>
 
+  <h2>${esc(d.name)}과 함께 보면 좋은 안내</h2>
+  ${longtailLinks(d.name, guType(d))}
+
   <h2>관련 지역 보기</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="관련 지역">
     <a href="/">서울 전체 지역 안내</a>
@@ -804,6 +894,9 @@ ${hero(`
           .join("")}</nav>`
       : ""
   }
+
+  <h2>${esc(l.name)}과 함께 보면 좋은 안내</h2>
+  ${longtailLinks(l.name, l.type)}
 
   <h2>인접 생활권 보기</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="인접 생활권">
@@ -1057,6 +1150,9 @@ ${hero(`
   <h2>${esc(dong.name)} 안내 기준</h2>
   <div style="margin-top:1rem">${whoHowWhy(`${gu.name} ${dong.name}`)}</div>
 
+  <h2>${esc(dong.name)}과 함께 보면 좋은 안내</h2>
+  ${longtailLinks(dong.name, dong.type)}
+
   <h2>${esc(gu.name)} 인접 행정동</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="인접 행정동">
     ${siblings}
@@ -1137,8 +1233,8 @@ ${hero(`
     .join("")}</ul>
   <div class="notice" style="margin-top:1.25rem">개인정보는 예약 확인과 연락에 필요한 최소 정보만 안내하며, 불법·선정적 서비스는 제공하거나 안내하지 않습니다.</div>
 
-  <h2>${esc(st.name)} 안내 기준</h2>
-  <div style="margin-top:1rem">${whoHowWhy(`${st.name} 역세권`)}</div>
+  <h2>${esc(st.name)} 역세권과 함께 보면 좋은 안내</h2>
+  ${longtailLinks(st.name, st.type)}
 
   <h2>다른 주요 역</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="다른 역">
@@ -1283,21 +1379,69 @@ ${floatingCall()}
   audit.push(`  ${sMax < 0.6 ? "✓" : "⚠"} 지하철역 본문 최대 유사도(Jaccard) ${sMax.toFixed(2)} ${sPair ? "(" + sPair + ")" : ""}`);
 
   // sitemap.xml
+  const NOW = new Date();
+  const today = NOW.toISOString().slice(0, 10);
+  const rfc822 = NOW.toUTCString();
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls
     .map(
       (u) =>
-        `  <url><loc>${abs(u)}</loc><changefreq>weekly</changefreq><priority>${u === "/" ? "1.0" : "0.8"}</priority></url>`
+        `  <url><loc>${abs(u)}</loc><lastmod>${today}</lastmod><changefreq>${u === "/" ? "daily" : "weekly"}</changefreq><priority>${u === "/" ? "1.0" : "0.8"}</priority></url>`
     )
     .join("\n")}
 </urlset>`;
   fs.writeFileSync(path.join(DIST, "sitemap.xml"), sitemap);
 
-  // robots.txt
+  // RSS 2.0 피드 — 색인 발견 촉진(네이버 서치어드바이저 RSS 제출용). 핵심 페이지 중심.
+  const feedItems = [
+    { u: "/", t: `${site.brand} 서울 출장마사지 생활권 지역 안내`, d: "서울 5대 생활권과 25개 구, 자택·호텔·오피스텔 방문 이용 기준 안내" },
+    ...areas.map((a) => ({ u: `/area/${a.slug}/`, t: `${a.name} 생활권 안내`, d: a.summary })),
+    ...districts.map((d) => ({ u: `/${d.slug}/`, t: `${d.name} 출장마사지 생활권별 예약 안내`, d: `${d.name} 대표 생활권·가까운 역·예약 전 확인` })),
+    ...stations.map((s) => ({ u: `/station/${s.slug}/`, t: `${s.name} 출장마사지 역세권 예약 안내`, d: `${s.name} ${s.lines.join("·")} 역세권 이용 안내` })),
+    ...lifeAreas.map((l) => ({ u: `/life/${l.slug}/`, t: `${l.name} 출장마사지 생활권 안내`, d: l.character.split(".")[0] + "." })),
+    ...useCases.map((u) => ({ u: `/use/${u.slug}/`, t: u.h1, d: u.intro.split(".")[0] + "." })),
+    ...checks.map((c) => ({ u: `/check/${c.slug}/`, t: c.h1, d: c.intro.split(".")[0] + "." })),
+  ];
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+<title>${esc(site.brand)} · 서울 지역 안내</title>
+<link>${site.siteUrl}/</link>
+<atom:link href="${abs("/rss.xml")}" rel="self" type="application/rss+xml"/>
+<description>서울 5대 생활권·25개 구·행정동·역세권 방문 이용 안내</description>
+<language>ko</language>
+<lastBuildDate>${rfc822}</lastBuildDate>
+${feedItems
+    .map(
+      (it) =>
+        `<item><title>${esc(it.t)}</title><link>${abs(it.u)}</link><guid isPermaLink="true">${abs(it.u)}</guid><pubDate>${rfc822}</pubDate><description>${esc(it.d || "")}</description></item>`
+    )
+    .join("\n")}
+</channel>
+</rss>`;
+  fs.writeFileSync(path.join(DIST, "rss.xml"), rss);
+
+  // robots.txt — 전 봇 허용 + 네이버(Yeti)/구글/빙 명시 + 사이트맵
   fs.writeFileSync(
     path.join(DIST, "robots.txt"),
-    `User-agent: *\nAllow: /\n\nSitemap: ${abs("/sitemap.xml")}\n`
+    [
+      "User-agent: *",
+      "Allow: /",
+      "",
+      "User-agent: Yeti", // 네이버
+      "Allow: /",
+      "",
+      "User-agent: Googlebot",
+      "Allow: /",
+      "",
+      "User-agent: Bingbot",
+      "Allow: /",
+      "",
+      `Sitemap: ${abs("/sitemap.xml")}`,
+      "",
+    ].join("\n")
   );
 
   console.log(`✔ 빌드 완료: 색인 ${urls.length}개 (+ 루트 리다이렉트)`);
