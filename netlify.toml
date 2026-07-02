@@ -6,9 +6,9 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# 루트 진입 시 서울 메인으로
+# 구 URL(/seoul/*) → 루트로 영구 이동
 [[redirects]]
-  from = "/"
-  to = "/seoul/"
+  from = "/seoul/*"
+  to = "/:splat"
   status = 301
-  force = false
+  force = true

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" width="640" height="480" role="img" aria-label="간다GO 방문 케어 이미지">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2330"/>
+      <stop offset="1" stop-color="#0d1119"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.7" cy="0.25" r="0.7">
+      <stop offset="0" stop-color="#ff7a2e" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#ff7a2e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="640" height="480" rx="22" fill="url(#bg)"/>
+  <rect width="640" height="480" rx="22" fill="url(#glow)"/>
+  <circle cx="150" cy="360" r="120" fill="#ffffff" opacity="0.03"/>
+  <circle cx="500" cy="150" r="90" fill="#ff7a2e" opacity="0.10"/>
+  <g fill="none" stroke="#ff7a2e" stroke-opacity="0.5" stroke-width="2">
+    <path d="M120 300 q80 -60 160 0 t160 0" stroke-opacity="0.35"/>
+    <path d="M120 330 q80 -60 160 0 t160 0" stroke-opacity="0.25"/>
+  </g>
+  <text x="48" y="220" fill="#f7f9fd" font-family="Pretendard, sans-serif" font-size="44" font-weight="800">간다GO</text>
+  <text x="50" y="262" fill="#c8d0de" font-family="Pretendard, sans-serif" font-size="20" font-weight="600">프리미엄 방문 케어</text>
+  <text x="50" y="292" fill="#9ba6b9" font-family="Pretendard, sans-serif" font-size="15">이미지를 이 자리에 업로드하세요</text>
+</svg>

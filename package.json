@@ -5,7 +5,7 @@
   "description": "간다GO 서울 지역 안내 정적 사이트 (data-driven build)",
   "scripts": {
     "build": "node scripts/build.js",
-    "serve": "node scripts/build.js && node -e \"const http=require('http'),fs=require('fs'),p=require('path');const dir=p.join(__dirname,'dist');http.createServer((q,s)=>{let f=p.join(dir,q.url.split('?')[0]);if(fs.existsSync(f)&&fs.statSync(f).isDirectory())f=p.join(f,'index.html');fs.readFile(f,(e,d)=>{if(e){s.statusCode=404;return s.end('404')}const t={'.html':'text/html','.css':'text/css','.xml':'application/xml','.txt':'text/plain'}[p.extname(f)]||'text/plain';s.setHeader('Content-Type',t+'; charset=utf-8');s.end(d)})}).listen(4321,()=>console.log('http://localhost:4321/seoul/'))\""
+    "serve": "node scripts/build.js && node -e \"const http=require('http'),fs=require('fs'),p=require('path');const dir=p.join(__dirname,'dist');http.createServer((q,s)=>{let f=p.join(dir,q.url.split('?')[0]);if(fs.existsSync(f)&&fs.statSync(f).isDirectory())f=p.join(f,'index.html');fs.readFile(f,(e,d)=>{if(e){s.statusCode=404;return s.end('404')}const t={'.html':'text/html','.css':'text/css','.xml':'application/xml','.txt':'text/plain','.svg':'image/svg+xml','.jpg':'image/jpeg','.jpeg':'image/jpeg','.png':'image/png','.webp':'image/webp'}[p.extname(f)]||'application/octet-stream';s.setHeader('Content-Type',t+'; charset=utf-8');s.end(d)})}).listen(4321,()=>console.log('http://localhost:4321/seoul/'))\""
   },
   "license": "UNLICENSED"
 }

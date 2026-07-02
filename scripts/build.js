@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* =====================================================================
    간다GO · 서울 지역 안내 — 정적 사이트 빌드 스크립트
-   data/seoul/*.json → dist/*.html + sitemap.xml + robots.txt
+   data/*.json → dist/*.html + sitemap.xml + robots.txt
    ===================================================================== */
 "use strict";
 
@@ -156,16 +156,16 @@ function webPageSchema({ title, desc, url, image }) {
 /* shared partials                                                    */
 /* ------------------------------------------------------------------ */
 const NAV = [
-  { label: "서울 홈", path: "/seoul/" },
-  { label: "생활권", path: "/seoul/#areas" },
-  { label: "구별 안내", path: "/seoul/#districts" },
-  { label: "이용 장소", path: "/seoul/use/home/" },
-  { label: "예약 전 확인", path: "/seoul/check/address/" },
+  { label: "서울 홈", path: "/" },
+  { label: "생활권", path: "/#areas" },
+  { label: "구별 안내", path: "/#districts" },
+  { label: "이용 장소", path: "/use/home/" },
+  { label: "예약 전 확인", path: "/check/address/" },
 ];
 
 function header() {
   return `<header class="site-header"><div class="container site-header__inner">
-    <a class="brand" href="/seoul/"><span class="brand__mark">${esc(site.brand)}</span><span class="brand__tag">서울 지역 안내</span></a>
+    <a class="brand" href="/"><span class="brand__mark">${esc(site.brand)}</span><span class="brand__tag">서울 지역 안내</span></a>
     <nav class="site-nav" aria-label="주요 메뉴">
       ${NAV.map((n) => `<a href="${n.path}">${esc(n.label)}</a>`).join("")}
     </nav>
@@ -188,17 +188,17 @@ function inquiryButtons() {
 function footer() {
   const guLinks = districts
     .slice(0, 8)
-    .map((d) => `<li><a href="/seoul/${d.slug}/">${esc(d.name)} 생활권 안내</a></li>`)
+    .map((d) => `<li><a href="/${d.slug}/">${esc(d.name)} 생활권 안내</a></li>`)
     .join("");
   const areaLinks = areas
-    .map((a) => `<li><a href="/seoul/area/${a.slug}/">${esc(a.name)} 안내</a></li>`)
+    .map((a) => `<li><a href="/area/${a.slug}/">${esc(a.name)} 안내</a></li>`)
     .join("");
   const useLinks = useCases
-    .map((u) => `<li><a href="/seoul/use/${u.slug}/">${esc(u.name)}</a></li>`)
+    .map((u) => `<li><a href="/use/${u.slug}/">${esc(u.name)}</a></li>`)
     .join("");
   const policyLinks = [
-    ...checks.map((c) => `<li><a href="/seoul/check/${c.slug}/">${esc(c.name)}</a></li>`),
-    ...policies.map((p) => `<li><a href="/seoul/policy/${p.slug}/">${esc(p.name)}</a></li>`),
+    ...checks.map((c) => `<li><a href="/check/${c.slug}/">${esc(c.name)}</a></li>`),
+    ...policies.map((p) => `<li><a href="/policy/${p.slug}/">${esc(p.name)}</a></li>`),
   ].join("");
   return `<footer class="site-footer"><div class="container">
     <div class="footer-cta">
@@ -218,7 +218,7 @@ function footer() {
         </dl>
       </div>
       <div class="footer-col"><h3>5대 생활권</h3><ul>${areaLinks}</ul></div>
-      <div class="footer-col"><h3>구별 안내</h3><ul>${guLinks}<li><a href="/seoul/#districts">전체 25개 구 보기</a></li></ul></div>
+      <div class="footer-col"><h3>구별 안내</h3><ul>${guLinks}<li><a href="/#districts">전체 25개 구 보기</a></li></ul></div>
       <div class="footer-col"><h3>이용 장소</h3><ul>${useLinks}</ul></div>
       <div class="footer-col"><h3>예약 전 확인 · 운영 기준</h3><ul>${policyLinks}</ul></div>
     </div>
@@ -362,10 +362,10 @@ function breadcrumbNav(trail) {
 }
 
 /* ------------------------------------------------------------------ */
-/* page: main /seoul/                                                 */
+/* page: main /                                                 */
 /* ------------------------------------------------------------------ */
 function mainPage() {
-  const url = "/seoul/";
+  const url = "/";
   const title = "서울 출장마사지｜강남·잠실·홍대·여의도·성수 생활권 지역 안내";
   const desc = clamp80(
     "서울 5대 생활권과 25개 구, 자택·호텔·오피스텔 방문 이용 기준을 안내합니다.",
@@ -374,7 +374,7 @@ function mainPage() {
 
   const areaCards = areas
     .map(
-      (a) => `<a class="card" href="/seoul/area/${a.slug}/">
+      (a) => `<a class="card" href="/area/${a.slug}/">
         <span class="card__title">${esc(a.name)}</span>
         <p class="card__meta">${esc(a.summary)}</p>
         <span class="card__tags">${a.lifeAreas.slice(0, 3).map((l) => `<span class="tag">${esc(l)}</span>`).join("")}</span>
@@ -384,7 +384,7 @@ function mainPage() {
 
   const guCards = districts
     .map(
-      (d) => `<a class="card" href="/seoul/${d.slug}/">
+      (d) => `<a class="card" href="/${d.slug}/">
         <span class="card__title">${esc(d.name)}</span>
         <p class="card__meta">${esc(d.lifeAreas.slice(0, 3).join(" · "))}</p>
         <span class="card__tags">${d.stations.slice(0, 2).map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</span>
@@ -399,16 +399,23 @@ function mainPage() {
     .join("");
 
   const body = `
-${breadcrumbNav([{ name: "서울", path: "/seoul/" }])}
-<section class="hero"><div class="container hero__inner">
-  <span class="eyebrow">서울 지역 안내</span>
-  <h1>서울 출장마사지 · 생활권별 방문 가능 지역 안내</h1>
-  <p>강남, 잠실, 홍대, 여의도, 성수, 용산, 목동, 마곡 등 서울 주요 생활권과 자택·호텔·오피스텔 이용 전 확인사항을 안내합니다.</p>
-  <div class="hero__cta">
-    <a class="btn btn--primary btn--lg" href="#areas">생활권 보기</a>
-    <a class="btn btn--ghost btn--lg" href="#districts">구별 안내</a>
-    <a class="btn btn--ghost btn--lg" href="#checklist">예약 전 확인</a>
+${breadcrumbNav([{ name: "서울", path: "/" }])}
+<section class="hero hero--split"><div class="container hero__grid">
+  <div class="hero__inner">
+    <span class="eyebrow">서울 지역 안내</span>
+    <h1>서울 출장마사지 · 생활권별 방문 가능 지역 안내</h1>
+    <p>강남, 잠실, 홍대, 여의도, 성수, 용산, 목동, 마곡 등 서울 주요 생활권과 자택·호텔·오피스텔 이용 전 확인사항을 안내합니다.</p>
+    <div class="hero__cta">
+      <a class="btn btn--primary btn--lg" href="#areas">생활권 보기</a>
+      <a class="btn btn--ghost btn--lg" href="#districts">구별 안내</a>
+      <a class="btn btn--ghost btn--lg" href="#checklist">예약 전 확인</a>
+    </div>
   </div>
+  ${
+    site.heroImage
+      ? `<div class="hero__media"><img src="${site.heroImage}" alt="${esc(site.heroImageAlt || site.brand)}" width="640" height="480" loading="eager" decoding="async"></div>`
+      : ""
+  }
 </div></section>
 
 <section class="section"><div class="container prose">
@@ -457,34 +464,34 @@ ${breadcrumbNav([{ name: "서울", path: "/seoul/" }])}
     title,
     desc,
     url,
-    breadcrumb: [{ name: "서울", path: "/seoul/" }],
+    breadcrumb: [{ name: "서울", path: "/" }],
     body,
     includeFaqSchema: true,
   });
 }
 
 /* ------------------------------------------------------------------ */
-/* page: area /seoul/area/<slug>/                                     */
+/* page: area /area/<slug>/                                     */
 /* ------------------------------------------------------------------ */
 function areaPage(a) {
-  const url = `/seoul/area/${a.slug}/`;
+  const url = `/area/${a.slug}/`;
   const title = `${a.name} 출장마사지 · 포함 구와 생활권 안내 | ${site.brand}`;
   const desc = clamp80(`${a.name} 안내 · 포함 구와 대표 생활권, 방문 이용 기준을 정리했습니다.`, url);
   const trail = [
-    { name: "서울", path: "/seoul/" },
+    { name: "서울", path: "/" },
     { name: a.name, path: url },
   ];
 
   const guCards = a.districts
     .map((slug) => {
       const d = districtBySlug[slug];
-      return `<a class="card" href="/seoul/${d.slug}/"><span class="card__title">${esc(d.name)}</span><p class="card__meta">${esc(d.lifeAreas.slice(0, 3).join(" · "))}</p></a>`;
+      return `<a class="card" href="/${d.slug}/"><span class="card__title">${esc(d.name)}</span><p class="card__meta">${esc(d.lifeAreas.slice(0, 3).join(" · "))}</p></a>`;
     })
     .join("");
 
   const otherAreas = areas
     .filter((x) => x.slug !== a.slug)
-    .map((x) => `<a href="/seoul/area/${x.slug}/">${esc(x.name)} 생활권 안내</a>`)
+    .map((x) => `<a href="/area/${x.slug}/">${esc(x.name)} 생활권 안내</a>`)
     .join("");
 
   const body = `
@@ -506,7 +513,7 @@ ${breadcrumbNav(trail)}
   <div class="grid grid--3" style="margin-top:1rem">${(lifeByArea[a.slug] || [])
     .map(
       (l) =>
-        `<a class="card" href="/seoul/life/${l.slug}/"><span class="card__title">${esc(l.name)}</span><p class="card__meta">${esc(l.character.split(".")[0])}.</p></a>`
+        `<a class="card" href="/life/${l.slug}/"><span class="card__title">${esc(l.name)}</span><p class="card__meta">${esc(l.character.split(".")[0])}.</p></a>`
     )
     .join("")}</div>
 
@@ -516,7 +523,7 @@ ${breadcrumbNav(trail)}
   <h2>이용 장소별 안내</h2>
   <div class="grid grid--3" style="margin-top:1rem">${useCases
     .slice(0, 6)
-    .map((u) => `<a class="card" href="/seoul/use/${u.slug}/"><span class="card__title">${esc(u.name)}</span><p class="card__meta">${esc(u.intro.split(".")[0])}.</p></a>`)
+    .map((u) => `<a class="card" href="/use/${u.slug}/"><span class="card__title">${esc(u.name)}</span><p class="card__meta">${esc(u.intro.split(".")[0])}.</p></a>`)
     .join("")}</div>
 
   <h2>예약 전 확인</h2>
@@ -537,23 +544,23 @@ ${breadcrumbNav(trail)}
 }
 
 /* ------------------------------------------------------------------ */
-/* page: district /seoul/<gu>/                                        */
+/* page: district /<gu>/                                        */
 /* ------------------------------------------------------------------ */
 function districtPage(d) {
-  const url = `/seoul/${d.slug}/`;
+  const url = `/${d.slug}/`;
   const area = areaBySlug[d.area];
   const title = `${d.name} 출장마사지 · 생활권별 예약 안내 | ${site.brand}`;
   const desc = clamp80(`${d.name} 생활권 안내 · 대표 생활권·가까운 역·예약 전 확인사항 정리.`, url);
   const trail = [
-    { name: "서울", path: "/seoul/" },
-    { name: area.name, path: `/seoul/area/${area.slug}/` },
+    { name: "서울", path: "/" },
+    { name: area.name, path: `/area/${area.slug}/` },
     { name: d.name, path: url },
   ];
 
   const nearbyGu = (d.nearby || [])
     .map((slug) => districtBySlug[slug])
     .filter(Boolean)
-    .map((n) => `<a href="/seoul/${n.slug}/">${esc(n.name)} 생활권 안내</a>`)
+    .map((n) => `<a href="/${n.slug}/">${esc(n.name)} 생활권 안내</a>`)
     .join("");
 
   const body = `
@@ -564,7 +571,7 @@ ${breadcrumbNav(trail)}
   <p>${esc(d.focus)}. 대표 생활권과 가까운 역, 이용 장소 기준을 함께 확인하세요.</p>
   <div class="hero__cta">
     <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
-    <a class="btn btn--ghost" href="/seoul/area/${area.slug}/">${esc(area.name)} 보기</a>
+    <a class="btn btn--ghost" href="/area/${area.slug}/">${esc(area.name)} 보기</a>
   </div>
 </div></section>
 
@@ -578,7 +585,7 @@ ${breadcrumbNav(trail)}
       ? `<div class="grid grid--3" style="margin-top:1rem">${(lifeByDistrict[d.slug] || [])
           .map(
             (l) =>
-              `<a class="card" href="/seoul/life/${l.slug}/"><span class="card__title">${esc(l.name)}</span><p class="card__meta">${esc(l.character.split(".")[0])}.</p></a>`
+              `<a class="card" href="/life/${l.slug}/"><span class="card__title">${esc(l.name)}</span><p class="card__meta">${esc(l.character.split(".")[0])}.</p></a>`
           )
           .join("")}</div>`
       : `<ul class="linklist" style="margin-top:1rem">${d.lifeAreas.map((l) => `<span class="tag">${esc(l)}</span>`).join("")}</ul>`
@@ -590,7 +597,7 @@ ${breadcrumbNav(trail)}
     return d.adminDongs
       .map((x) =>
         pageByName[x]
-          ? `<a href="/seoul/${d.slug}/${pageByName[x].slug}/">${esc(x)} 방문 안내</a>`
+          ? `<a href="/${d.slug}/${pageByName[x].slug}/">${esc(x)} 방문 안내</a>`
           : `<span class="tag">${esc(x)}</span>`
       )
       .join("");
@@ -601,10 +608,10 @@ ${breadcrumbNav(trail)}
 
   <h2>이용 장소별 기준</h2>
   <div class="grid grid--2" style="margin-top:1rem">
-    <a class="card" href="/seoul/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식, 방문 가능 시간대를 미리 확인합니다.</p></a>
-    <a class="card" href="/seoul/use/hotel/"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 정책과 객실 출입 가능 여부를 먼저 확인합니다.</p></a>
-    <a class="card" href="/seoul/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관, 엘리베이터, 관리 규정을 확인합니다.</p></a>
-    <a class="card" href="/seoul/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">${esc(d.name)}의 가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
+    <a class="card" href="/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식, 방문 가능 시간대를 미리 확인합니다.</p></a>
+    <a class="card" href="/use/hotel/"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 정책과 객실 출입 가능 여부를 먼저 확인합니다.</p></a>
+    <a class="card" href="/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관, 엘리베이터, 관리 규정을 확인합니다.</p></a>
+    <a class="card" href="/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">${esc(d.name)}의 가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
   </div>
 
   <h2 id="checklist">예약 전 체크리스트</h2>
@@ -619,11 +626,11 @@ ${breadcrumbNav(trail)}
 
   <h2>관련 지역 보기</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="관련 지역">
-    <a href="/seoul/">서울 전체 지역 안내</a>
-    <a href="/seoul/area/${area.slug}/">${esc(area.name)} 생활권 안내</a>
+    <a href="/">서울 전체 지역 안내</a>
+    <a href="/area/${area.slug}/">${esc(area.name)} 생활권 안내</a>
     ${nearbyGu}
-    <a href="/seoul/check/address/">방문 주소 확인</a>
-    <a href="/seoul/check/building-access/">건물 출입 방식 확인</a>
+    <a href="/check/address/">방문 주소 확인</a>
+    <a href="/check/building-access/">건물 출입 방식 확인</a>
   </nav>
 </div></section>
 `;
@@ -632,17 +639,17 @@ ${breadcrumbNav(trail)}
 }
 
 /* ------------------------------------------------------------------ */
-/* page: life-area /seoul/life/<slug>/                                */
+/* page: life-area /life/<slug>/                                */
 /* ------------------------------------------------------------------ */
 function lifePage(l) {
-  const url = `/seoul/life/${l.slug}/`;
+  const url = `/life/${l.slug}/`;
   const area = areaBySlug[l.area];
   const parentGus = (l.districts || []).map((s) => districtBySlug[s]).filter(Boolean);
   const title = `${l.name} 출장마사지 생활권 안내 | ${site.brand}`;
   const desc = clamp80(`${l.name} 생활권 안내 · 가까운 역과 이용 장소, 예약 전 확인사항을 정리했습니다.`, url);
   const trail = [
-    { name: "서울", path: "/seoul/" },
-    { name: area.name, path: `/seoul/area/${area.slug}/` },
+    { name: "서울", path: "/" },
+    { name: area.name, path: `/area/${area.slug}/` },
     { name: l.name, path: url },
   ];
 
@@ -660,7 +667,7 @@ function lifePage(l) {
   const siblings = (lifeByArea[l.area] || [])
     .filter((x) => x.slug !== l.slug)
     .slice(0, 4)
-    .map((x) => `<a href="/seoul/life/${x.slug}/">${esc(x.name)} 생활권 안내</a>`)
+    .map((x) => `<a href="/life/${x.slug}/">${esc(x.name)} 생활권 안내</a>`)
     .join("");
 
   const body = `
@@ -670,7 +677,7 @@ ${breadcrumbNav(trail)}
   <h1>${esc(l.name)} 출장마사지 생활권 안내</h1>
   <p>${esc(l.character.split(".")[0])}.</p>
   <div class="hero__cta">
-    ${parentGus[0] ? `<a class="btn btn--ghost" href="/seoul/${parentGus[0].slug}/">${esc(parentGus[0].name)} 안내</a>` : ""}
+    ${parentGus[0] ? `<a class="btn btn--ghost" href="/${parentGus[0].slug}/">${esc(parentGus[0].name)} 안내</a>` : ""}
     <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
   </div>
 </div></section>
@@ -681,7 +688,7 @@ ${breadcrumbNav(trail)}
 
   <h2>포함 행정구</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="포함 구">${parentGus
-    .map((g) => `<a href="/seoul/${g.slug}/">${esc(g.name)} 생활권 안내</a>`)
+    .map((g) => `<a href="/${g.slug}/">${esc(g.name)} 생활권 안내</a>`)
     .join("")}</nav>
 
   <h2>가까운 지하철역</h2>
@@ -693,9 +700,9 @@ ${breadcrumbNav(trail)}
   <h2>${esc(l.name)} 이용 시 확인할 점</h2>
   <p>${esc(typeGuide[l.type] || typeGuide.residential)}</p>
   <div class="grid grid--3" style="margin-top:1rem">
-    <a class="card" href="/seoul/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식을 미리 확인합니다.</p></a>
-    <a class="card" href="/seoul/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관·엘리베이터 인증과 관리 규정을 확인합니다.</p></a>
-    <a class="card" href="/seoul/use/hotel/"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 방문 정책과 객실 출입 여부를 확인합니다.</p></a>
+    <a class="card" href="/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식을 미리 확인합니다.</p></a>
+    <a class="card" href="/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관·엘리베이터 인증과 관리 규정을 확인합니다.</p></a>
+    <a class="card" href="/use/hotel/"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 방문 정책과 객실 출입 여부를 확인합니다.</p></a>
   </div>
 
   <h2 id="checklist">예약 전 체크리스트</h2>
@@ -712,14 +719,14 @@ ${breadcrumbNav(trail)}
     (dongsByLife[l.slug] || []).length
       ? `<h2>${esc(l.name)} 주요 행정동</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="주요 행정동">${(dongsByLife[l.slug] || [])
-          .map((dg) => `<a href="/seoul/${dg.district}/${dg.slug}/">${esc(dg.name)} 방문 안내</a>`)
+          .map((dg) => `<a href="/${dg.district}/${dg.slug}/">${esc(dg.name)} 방문 안내</a>`)
           .join("")}</nav>`
       : ""
   }
 
   <h2>인접 생활권 보기</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="인접 생활권">
-    <a href="/seoul/area/${area.slug}/">${esc(area.name)} 전체 보기</a>
+    <a href="/area/${area.slug}/">${esc(area.name)} 전체 보기</a>
     ${siblings}
   </nav>
 </div></section>
@@ -728,21 +735,21 @@ ${breadcrumbNav(trail)}
 }
 
 /* ------------------------------------------------------------------ */
-/* page: use-case /seoul/use/<slug>/                                  */
+/* page: use-case /use/<slug>/                                  */
 /* ------------------------------------------------------------------ */
 function usePage(u) {
-  const url = `/seoul/use/${u.slug}/`;
+  const url = `/use/${u.slug}/`;
   const title = `${u.h1} | ${site.brand}`;
   const desc = clamp80(`${u.name} 전 확인할 점과 서울 지역별 기준을 안내합니다.`, url);
   const trail = [
-    { name: "서울", path: "/seoul/" },
-    { name: "이용 장소", path: "/seoul/use/home/" },
+    { name: "서울", path: "/" },
+    { name: "이용 장소", path: "/use/home/" },
     { name: u.name, path: url },
   ];
   const related = (u.relatedUse || [])
     .map((s) => useBySlug[s])
     .filter(Boolean)
-    .map((x) => `<a href="/seoul/use/${x.slug}/">${esc(x.name)} 안내</a>`)
+    .map((x) => `<a href="/use/${x.slug}/">${esc(x.name)} 안내</a>`)
     .join("");
 
   const body = `
@@ -770,8 +777,8 @@ ${breadcrumbNav(trail)}
   <h2>관련 이용 안내</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="관련 이용 안내">
     ${related}
-    <a href="/seoul/check/address/">방문 주소 확인</a>
-    <a href="/seoul/">서울 전체 지역 안내</a>
+    <a href="/check/address/">방문 주소 확인</a>
+    <a href="/">서울 전체 지역 안내</a>
   </nav>
 </div></section>
 `;
@@ -779,21 +786,21 @@ ${breadcrumbNav(trail)}
 }
 
 /* ------------------------------------------------------------------ */
-/* page: check /seoul/check/<slug>/                                   */
+/* page: check /check/<slug>/                                   */
 /* ------------------------------------------------------------------ */
 function checkPage(c) {
-  const url = `/seoul/check/${c.slug}/`;
+  const url = `/check/${c.slug}/`;
   const title = `${c.h1} | ${site.brand}`;
   const desc = clamp80(`${c.name} · 서울 예약 전 확인해야 할 기준을 안내합니다.`, url);
   const trail = [
-    { name: "서울", path: "/seoul/" },
-    { name: "예약 전 확인", path: "/seoul/check/address/" },
+    { name: "서울", path: "/" },
+    { name: "예약 전 확인", path: "/check/address/" },
     { name: c.name, path: url },
   ];
   const others = checks
     .filter((x) => x.slug !== c.slug)
     .slice(0, 4)
-    .map((x) => `<a href="/seoul/check/${x.slug}/">${esc(x.name)}</a>`)
+    .map((x) => `<a href="/check/${x.slug}/">${esc(x.name)}</a>`)
     .join("");
 
   const body = `
@@ -820,8 +827,8 @@ ${breadcrumbNav(trail)}
   <h2>다른 확인 항목</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="다른 확인 항목">
     ${others}
-    <a href="/seoul/policy/privacy/">개인정보 처리방침</a>
-    <a href="/seoul/policy/service-policy/">불법·선정적 서비스 불가 안내</a>
+    <a href="/policy/privacy/">개인정보 처리방침</a>
+    <a href="/policy/service-policy/">불법·선정적 서비스 불가 안내</a>
   </nav>
 </div></section>
 `;
@@ -829,20 +836,20 @@ ${breadcrumbNav(trail)}
 }
 
 /* ------------------------------------------------------------------ */
-/* page: policy /seoul/policy/<slug>/                                 */
+/* page: policy /policy/<slug>/                                 */
 /* ------------------------------------------------------------------ */
 function policyPage(p) {
-  const url = `/seoul/policy/${p.slug}/`;
+  const url = `/policy/${p.slug}/`;
   const title = `${p.h1} | ${site.brand}`;
   const desc = clamp80(p.desc, url);
   const trail = [
-    { name: "서울", path: "/seoul/" },
-    { name: "운영 기준", path: "/seoul/policy/privacy/" },
+    { name: "서울", path: "/" },
+    { name: "운영 기준", path: "/policy/privacy/" },
     { name: p.name, path: url },
   ];
   const others = policies
     .filter((x) => x.slug !== p.slug)
-    .map((x) => `<a href="/seoul/policy/${x.slug}/">${esc(x.name)}</a>`)
+    .map((x) => `<a href="/policy/${x.slug}/">${esc(x.name)}</a>`)
     .join("");
 
   const body = `
@@ -859,7 +866,7 @@ ${breadcrumbNav(trail)}
   <h2>관련 안내</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="관련 안내">
     ${others}
-    <a href="/seoul/">서울 전체 지역 안내</a>
+    <a href="/">서울 전체 지역 안내</a>
   </nav>
 </div></section>
 `;
@@ -867,7 +874,7 @@ ${breadcrumbNav(trail)}
 }
 
 /* ------------------------------------------------------------------ */
-/* page: admin-dong /seoul/<gu>/<dong>/                               */
+/* page: admin-dong /<gu>/<dong>/                               */
 /* ------------------------------------------------------------------ */
 const BUILDING_GUIDE = {
   business: "업무지구 성격이 강해 건물 보안 게이트·방문증·엘리베이터 인증 등 출입 절차를 미리 확인하는 것이 좋습니다.",
@@ -906,22 +913,22 @@ function adminDongPage(dong) {
   const gu = districtBySlug[dong.district];
   const area = areaBySlug[gu.area];
   const life = dong.lifeArea ? lifeBySlug[dong.lifeArea] : null;
-  const url = `/seoul/${gu.slug}/${dong.slug}/`;
+  const url = `/${gu.slug}/${dong.slug}/`;
   const label = TYPE_LABEL[dong.type] || "생활권";
   const [s1, s2] = dong.stations;
   const title = `${dong.name} 출장마사지 · ${gu.name} ${label} 방문 안내 | ${site.brand}`;
   const desc = clamp80(`${dong.name} 방문 안내 · ${s1}${s2 ? "·" + s2 : ""} 인근 ${label}, 예약 전 확인사항 정리.`, url);
   const trail = [
-    { name: "서울", path: "/seoul/" },
-    { name: area.name, path: `/seoul/area/${area.slug}/` },
-    { name: gu.name, path: `/seoul/${gu.slug}/` },
+    { name: "서울", path: "/" },
+    { name: area.name, path: `/area/${area.slug}/` },
+    { name: gu.name, path: `/${gu.slug}/` },
     { name: dong.name, path: url },
   ];
 
   const siblings = (dongsByDistrict[dong.district] || [])
     .filter((x) => x.slug !== dong.slug)
     .slice(0, 5)
-    .map((x) => `<a href="/seoul/${gu.slug}/${x.slug}/">${esc(x.name)} 방문 안내</a>`)
+    .map((x) => `<a href="/${gu.slug}/${x.slug}/">${esc(x.name)} 방문 안내</a>`)
     .join("");
 
   const body = `
@@ -931,8 +938,8 @@ ${breadcrumbNav(trail)}
   <h1>${esc(dong.name)} 출장마사지 · ${esc(gu.name)} 방문 안내</h1>
   <p>${esc(dong.character.split(".")[0])}.</p>
   <div class="hero__cta">
-    <a class="btn btn--ghost" href="/seoul/${gu.slug}/">${esc(gu.name)} 안내</a>
-    ${life ? `<a class="btn btn--ghost" href="/seoul/life/${life.slug}/">${esc(life.name)} 생활권</a>` : ""}
+    <a class="btn btn--ghost" href="/${gu.slug}/">${esc(gu.name)} 안내</a>
+    ${life ? `<a class="btn btn--ghost" href="/life/${life.slug}/">${esc(life.name)} 생활권</a>` : ""}
     <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
   </div>
 </div></section>
@@ -943,9 +950,9 @@ ${breadcrumbNav(trail)}
 
   <h2>상위 지역 연결</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="상위 지역">
-    <a href="/seoul/${gu.slug}/">${esc(gu.name)} 생활권 안내</a>
-    <a href="/seoul/area/${area.slug}/">${esc(area.name)} 안내</a>
-    ${life ? `<a href="/seoul/life/${life.slug}/">${esc(life.name)} 생활권 안내</a>` : ""}
+    <a href="/${gu.slug}/">${esc(gu.name)} 생활권 안내</a>
+    <a href="/area/${area.slug}/">${esc(area.name)} 안내</a>
+    ${life ? `<a href="/life/${life.slug}/">${esc(life.name)} 생활권 안내</a>` : ""}
   </nav>
 
   <h2>가까운 지하철역</h2>
@@ -955,9 +962,9 @@ ${breadcrumbNav(trail)}
   <p>${esc(BUILDING_GUIDE[dong.type] || BUILDING_GUIDE.residential)}</p>
   <p>${esc(dong.point)}</p>
   <div class="grid grid--3" style="margin-top:1rem">
-    <a class="card" href="/seoul/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식을 미리 확인합니다.</p></a>
-    <a class="card" href="/seoul/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관·엘리베이터 인증과 관리 규정을 확인합니다.</p></a>
-    <a class="card" href="/seoul/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
+    <a class="card" href="/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식을 미리 확인합니다.</p></a>
+    <a class="card" href="/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관·엘리베이터 인증과 관리 규정을 확인합니다.</p></a>
+    <a class="card" href="/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
   </div>
 
   <h2 id="checklist">${esc(dong.name)} 예약 전 확인</h2>
@@ -972,7 +979,7 @@ ${breadcrumbNav(trail)}
   <h2>${esc(gu.name)} 인접 행정동</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="인접 행정동">
     ${siblings}
-    <a href="/seoul/check/address/">방문 주소 확인</a>
+    <a href="/check/address/">방문 주소 확인</a>
   </nav>
 </div></section>
 `;
@@ -1002,18 +1009,10 @@ function emit(relDir, url, html) {
 function build() {
   fs.rmSync(DIST, { recursive: true, force: true });
   fs.mkdirSync(path.join(DIST, "assets"), { recursive: true });
+  // src/assets/* → dist/assets/ (히어로 이미지 등 정적 파일)
+  const srcAssets = path.join(ROOT, "src", "assets");
+  if (fs.existsSync(srcAssets)) fs.cpSync(srcAssets, path.join(DIST, "assets"), { recursive: true });
   fs.copyFileSync(SRC_CSS, path.join(DIST, "assets", "main.css"));
-
-  // root redirect → /seoul/
-  fs.writeFileSync(
-    path.join(DIST, "index.html"),
-    `<!doctype html><html lang="ko"><head><meta charset="utf-8">
-<title>${esc(site.brand)}</title>
-<link rel="canonical" href="${abs("/seoul/")}">
-<meta http-equiv="refresh" content="0; url=/seoul/">
-<meta name="robots" content="noindex, follow">
-</head><body><p><a href="/seoul/">서울 지역 안내로 이동</a></p></body></html>`
-  );
 
   // 브랜드 404 (Netlify가 publish/404.html을 자동 서빙)
   fs.writeFileSync(
@@ -1031,28 +1030,28 @@ ${header()}
 <h1>페이지를 찾을 수 없습니다</h1>
 <p>주소가 바뀌었거나 존재하지 않는 페이지입니다. 아래에서 원하는 지역을 다시 찾아보세요.</p>
 <nav class="linklist" style="justify-content:center;margin-top:1.5rem" aria-label="바로가기">
-<a href="/seoul/">서울 전체 지역 안내</a>
-<a href="/seoul/#areas">5대 생활권</a>
-<a href="/seoul/#districts">25개 구</a>
-<a href="/seoul/use/home/">이용 장소</a>
-<a href="/seoul/check/address/">예약 전 확인</a>
+<a href="/">서울 전체 지역 안내</a>
+<a href="/#areas">5대 생활권</a>
+<a href="/#districts">25개 구</a>
+<a href="/use/home/">이용 장소</a>
+<a href="/check/address/">예약 전 확인</a>
 </nav>
 </div></section></main>
 ${footer()}
 </body></html>`
   );
 
-  emit("seoul", "/seoul/", mainPage());
+  emit(".", "/", mainPage());
 
-  areas.forEach((a) => emit(path.join("seoul", "area", a.slug), `/seoul/area/${a.slug}/`, areaPage(a)));
-  districts.forEach((d) => emit(path.join("seoul", d.slug), `/seoul/${d.slug}/`, districtPage(d)));
+  areas.forEach((a) => emit(path.join("area", a.slug), `/area/${a.slug}/`, areaPage(a)));
+  districts.forEach((d) => emit(d.slug, `/${d.slug}/`, districtPage(d)));
   adminDongs.forEach((dg) =>
-    emit(path.join("seoul", dg.district, dg.slug), `/seoul/${dg.district}/${dg.slug}/`, adminDongPage(dg))
+    emit(path.join(dg.district, dg.slug), `/${dg.district}/${dg.slug}/`, adminDongPage(dg))
   );
-  lifeAreas.forEach((l) => emit(path.join("seoul", "life", l.slug), `/seoul/life/${l.slug}/`, lifePage(l)));
-  useCases.forEach((u) => emit(path.join("seoul", "use", u.slug), `/seoul/use/${u.slug}/`, usePage(u)));
-  checks.forEach((c) => emit(path.join("seoul", "check", c.slug), `/seoul/check/${c.slug}/`, checkPage(c)));
-  policies.forEach((p) => emit(path.join("seoul", "policy", p.slug), `/seoul/policy/${p.slug}/`, policyPage(p)));
+  lifeAreas.forEach((l) => emit(path.join("life", l.slug), `/life/${l.slug}/`, lifePage(l)));
+  useCases.forEach((u) => emit(path.join("use", u.slug), `/use/${u.slug}/`, usePage(u)));
+  checks.forEach((c) => emit(path.join("check", c.slug), `/check/${c.slug}/`, checkPage(c)));
+  policies.forEach((p) => emit(path.join("policy", p.slug), `/policy/${p.slug}/`, policyPage(p)));
 
   // ── 검증: 완전성 + 고유성 + 중복(near-duplicate) ──────────────────
   const audit = [];
@@ -1092,7 +1091,7 @@ ${footer()}
 ${urls
     .map(
       (u) =>
-        `  <url><loc>${abs(u)}</loc><changefreq>weekly</changefreq><priority>${u === "/seoul/" ? "1.0" : "0.8"}</priority></url>`
+        `  <url><loc>${abs(u)}</loc><changefreq>weekly</changefreq><priority>${u === "/" ? "1.0" : "0.8"}</priority></url>`
     )
     .join("\n")}
 </urlset>`;
