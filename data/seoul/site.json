@@ -3,8 +3,8 @@
   "brandEn": "GandaGO",
   "siteUrl": "https://softauramassage.netlify.app",
   "defaultOgImage": "/assets/og-default.jpg",
-  "heroImage": "/assets/hero.svg",
-  "heroImageAlt": "간다GO 서울 방문 케어 안내 이미지",
+  "heroImage": "/assets/hero.webp",
+  "heroImageAlt": "은은한 조명과 도심 야경이 보이는 프리미엄 방문 케어 공간 안내 이미지",
   "phone": "0508-202-4719",
   "phoneLabel": "전화예약",
   "telegram": {
