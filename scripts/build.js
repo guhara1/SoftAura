@@ -55,6 +55,27 @@ function textLen(html) {
   return [...html.replace(/<[^>]+>/g, "").replace(/\s+/g, "")].length;
 }
 
+// 고유성·중복 검증용 유틸
+const allTitles = [];
+const allDescs = [];
+function findDup(arr) {
+  const seen = new Set(), dup = new Set();
+  arr.forEach((x) => (seen.has(x) ? dup.add(x) : seen.add(x)));
+  return [...dup];
+}
+function shingles(html, k = 5) {
+  const words = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().split(" ");
+  const s = new Set();
+  for (let i = 0; i + k <= words.length; i++) s.add(words.slice(i, i + k).join(" "));
+  return s;
+}
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let inter = 0;
+  for (const x of a) if (b.has(x)) inter++;
+  return inter / (a.size + b.size - inter);
+}
+
 /* ------------------------------------------------------------------ */
 /* helpers                                                            */
 /* ------------------------------------------------------------------ */
@@ -285,6 +306,8 @@ function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, i
   const thin = textLen(body) < MIN_INDEX_CHARS;
   const noindex = thin && !forceIndex;
   if (noindex) noindexLog.push(`${url} (본문 ${textLen(body)}자)`);
+  allTitles.push(title);
+  allDescs.push(desc);
 
   const graph = [orgSchema, webPageSchema({ title, desc, url, image }), pricingSchema()];
   if (breadcrumb) graph.push(breadcrumbSchema(breadcrumb));
@@ -853,15 +876,41 @@ const BUILDING_GUIDE = {
   nightlife: "숙소·상권이 밀집해 숙소 방문 정책과 야간 예약 가능 시간을 함께 확인하는 것이 좋습니다.",
   university: "대학가 원룸·오피스텔이 많아 비슷한 건물이 이어지므로 건물명과 호수, 공동현관 방식을 정확히 확인해야 합니다.",
   lodging: "호텔·숙소 비중이 높아 객실 출입 가능 여부와 로비 확인 절차를 먼저 확인하는 것이 좋습니다.",
+  transit: "여러 노선이 만나는 환승 거점이라 출구별 도보 거리 차이가 크므로 가까운 출구와 정확한 건물 주소를 함께 확인하는 것이 좋습니다.",
+  downtown: "도심 업무·상권이 밀집해 오피스 보안 절차와 상가 출입 방식이 함께 있어 방문 유형에 따라 확인 사항이 다릅니다.",
+  industrial: "산업·유통 시설이 많아 단지·동 번호와 출입 게이트, 방문 가능 시간대를 미리 확인하는 것이 좋습니다.",
+  culture: "문화·상권 시설과 주거가 섞여 있어 방문지 유형과 정확한 건물 주소를 함께 확인하는 것이 좋습니다.",
 };
+
+const TYPE_LABEL = {
+  business: "업무지구", residential: "주거 생활권", commercial: "상권 생활권", nightlife: "숙소·상권",
+  university: "대학가", lodging: "호텔·숙소", transit: "역세권", downtown: "도심", industrial: "산업권", culture: "문화·상권",
+};
+
+const TYPE_CHECKS = {
+  business: ["건물 보안 게이트·방문증 절차를 확인했나요?", "정확한 층·호실을 안내했나요?", "야간·주말 출입구가 별도인가요?"],
+  residential: ["공동현관 출입 방식을 확인했나요?", "동·호수와 출입구 위치를 안내했나요?", "방문 가능 시간대를 확인했나요?"],
+  commercial: ["방문지가 상가인지 주거인지 확인했나요?", "상호와 층수를 함께 안내했나요?", "차량 접근·주차 여부를 확인했나요?"],
+  nightlife: ["숙소 방문 정책을 확인했나요?", "객실 출입이 가능한 형태인가요?", "야간 예약 가능 시간을 확인했나요?"],
+  university: ["건물명과 호수를 정확히 확인했나요?", "공동현관 출입 방식을 확인했나요?", "유사 건물 여부를 도로명 주소로 확인했나요?"],
+  lodging: ["숙소의 외부인 방문 정책을 확인했나요?", "객실 출입 가능 여부를 확인했나요?", "로비·프런트 확인 절차가 있나요?"],
+  transit: ["가까운 출구 번호를 확인했나요?", "역명이 아닌 건물 주소를 안내했나요?", "환승 혼잡 시간대를 고려했나요?"],
+  downtown: ["오피스 보안·방문증 절차를 확인했나요?", "상가·주거 여부를 구분했나요?", "가까운 차량 진입로를 확인했나요?"],
+  industrial: ["단지·동 번호를 확인했나요?", "출입 게이트·방문 시간대를 확인했나요?", "대형 차량 접근 경로를 확인했나요?"],
+  culture: ["방문지 유형(상가·주거)을 확인했나요?", "정확한 건물 주소를 안내했나요?", "행사·공연 시간대 혼잡을 고려했나요?"],
+};
+
+const dongAudit = [];
 
 function adminDongPage(dong) {
   const gu = districtBySlug[dong.district];
   const area = areaBySlug[gu.area];
   const life = dong.lifeArea ? lifeBySlug[dong.lifeArea] : null;
   const url = `/seoul/${gu.slug}/${dong.slug}/`;
-  const title = `${dong.name} 출장마사지 · ${gu.name} 방문 안내 | ${site.brand}`;
-  const desc = clamp80(`${dong.name}(${gu.name}) 방문 안내 · 가까운 역과 이용 장소, 확인사항을 정리했습니다.`, url);
+  const label = TYPE_LABEL[dong.type] || "생활권";
+  const [s1, s2] = dong.stations;
+  const title = `${dong.name} 출장마사지 · ${gu.name} ${label} 방문 안내 | ${site.brand}`;
+  const desc = clamp80(`${dong.name} 방문 안내 · ${s1}${s2 ? "·" + s2 : ""} 인근 ${label}, 예약 전 확인사항 정리.`, url);
   const trail = [
     { name: "서울", path: "/seoul/" },
     { name: area.name, path: `/seoul/area/${area.slug}/` },
@@ -911,8 +960,10 @@ ${breadcrumbNav(trail)}
     <a class="card" href="/seoul/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
   </div>
 
-  <h2 id="checklist">예약 전 체크리스트</h2>
-  <div style="margin-top:1rem;max-width:720px">${checklistBlock()}</div>
+  <h2 id="checklist">${esc(dong.name)} 예약 전 확인</h2>
+  <ul class="checklist" style="margin-top:1rem;max-width:720px">${(TYPE_CHECKS[dong.type] || TYPE_CHECKS.residential)
+    .map((c) => `<li>${esc(c)}</li>`)
+    .join("")}</ul>
   <div class="notice" style="margin-top:1.25rem">개인정보는 예약 확인과 연락에 필요한 최소 정보만 안내하며, 불법·선정적 서비스는 제공하거나 안내하지 않습니다.</div>
 
   <h2>${esc(dong.name)} 안내 기준</h2>
@@ -925,6 +976,7 @@ ${breadcrumbNav(trail)}
   </nav>
 </div></section>
 `;
+  dongAudit.push({ district: dong.district, url, title, desc, text: textLen(body), body });
   return layout({ title, desc, url, breadcrumb: trail, body });
 }
 
@@ -975,6 +1027,38 @@ function build() {
   checks.forEach((c) => emit(path.join("seoul", "check", c.slug), `/seoul/check/${c.slug}/`, checkPage(c)));
   policies.forEach((p) => emit(path.join("seoul", "policy", p.slug), `/seoul/policy/${p.slug}/`, policyPage(p)));
 
+  // ── 검증: 완전성 + 고유성 + 중복(near-duplicate) ──────────────────
+  const audit = [];
+  // 1) 완전성: districts.json 대표 행정동이 모두 페이지로 존재하는가
+  const missing = [];
+  districts.forEach((d) => {
+    const names = new Set((dongsByDistrict[d.slug] || []).map((x) => x.name));
+    (d.adminDongs || []).forEach((n) => {
+      if (!names.has(n)) missing.push(`${d.name} › ${n}`);
+    });
+  });
+  audit.push(missing.length ? `  ✗ 누락 행정동 ${missing.length}개: ${missing.join(", ")}` : `  ✓ 대표 행정동 전수 생성(구별 누락 0)`);
+
+  // 2) 고유성: 타이틀·디스크립션 중복 검사(전 페이지 대상)
+  const titleDup = findDup(allTitles);
+  const descDup = findDup(allDescs);
+  audit.push(titleDup.length ? `  ✗ 타이틀 중복 ${titleDup.length}: ${titleDup.join(" / ")}` : `  ✓ 타이틀 고유(중복 0, ${allTitles.length}p)`);
+  audit.push(descDup.length ? `  ✗ 디스크립션 중복 ${descDup.length}: ${descDup.join(" / ")}` : `  ✓ 디스크립션 고유(중복 0, ${allDescs.length}p)`);
+
+  // 3) 중복 본문: 같은 구 내 행정동 페이지 쌍의 최대 Jaccard(5-word shingle)
+  let maxJ = 0, maxPair = "";
+  const byDist = {};
+  dongAudit.forEach((a) => (byDist[a.district] = byDist[a.district] || []).push(a));
+  for (const dist of Object.keys(byDist)) {
+    const arr = byDist[dist].map((a) => ({ url: a.url, sh: shingles(a.body) }));
+    for (let i = 0; i < arr.length; i++)
+      for (let j = i + 1; j < arr.length; j++) {
+        const J = jaccard(arr[i].sh, arr[j].sh);
+        if (J > maxJ) { maxJ = J; maxPair = `${arr[i].url} ~ ${arr[j].url}`; }
+      }
+  }
+  audit.push(`  ${maxJ < 0.6 ? "✓" : "⚠"} 행정동 본문 최대 유사도(Jaccard) ${maxJ.toFixed(2)} ${maxPair ? "(" + maxPair + ")" : ""}`);
+
   // sitemap.xml
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -1005,6 +1089,8 @@ ${urls
       ? `  · 도어웨이 방지 noindex ${noindexLog.length}개: ${noindexLog.join(", ")}`
       : "  · thin-content noindex 대상 없음 ✓"
   );
+  console.log("── 검증 ──");
+  console.log(audit.join("\n"));
 }
 
 build();

@@ -22,17 +22,24 @@ npm run build   # dist/ 생성
 npm run serve   # http://localhost:4321/seoul/
 ```
 
-## 현재 범위 (색인 106페이지)
+## 현재 범위 (색인 196페이지)
 
 - 서울 메인 `/seoul/`
 - 5대 생활권 `/seoul/area/<slug>/` (5)
 - 25개 구 `/seoul/<gu-slug>/` (25)
-- 대표 행정동 `/seoul/<gu>/<dong>/` (33) — 정체성이 뚜렷한 동만, 동별 고유 본문
+- 대표 행정동 `/seoul/<gu>/<dong>/` (123) — **25개 구 대표 행정동 전수**, 동별 고유 본문
 - 생활권(동네) `/seoul/life/<slug>/` (25) — 동네별 고유 성격 본문
 - 이용 장소 `/seoul/use/<slug>/` (7)
 - 예약 전 확인 `/seoul/check/<slug>/` (6)
 - 운영 기준·정책·작성자 소개 `/seoul/policy/<slug>/` (4)
 - `sitemap.xml`(noindex 제외), `robots.txt`, 루트 리다이렉트
+
+### 빌드 시 자동 검증 (복사·중복·도어웨이 방지)
+빌드(`npm run build`) 마지막에 다음을 검사·출력합니다:
+- **대표 행정동 전수 생성** — `districts.json`의 모든 행정동이 페이지로 존재하는지(누락 0 확인)
+- **타이틀 고유** — 전 페이지 타이틀 중복 0
+- **디스크립션 고유** — 전 페이지 디스크립션 중복 0 (모두 80자 이내)
+- **본문 중복(near-duplicate)** — 같은 구 행정동 페이지 쌍의 최대 Jaccard 유사도 측정(현재 0.46)
 
 ## 디자인
 - **다크 테마**(블랙 계열 배경 + 밝은 텍스트), Pretendard, 오렌지 액센트
