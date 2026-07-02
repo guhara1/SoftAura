@@ -23,6 +23,8 @@ const checks = readJSON("checks.json");
 const policies = readJSON("policies.json");
 const lifeAreas = readJSON("life-areas.json");
 const adminDongs = readJSON("admin-dongs.json");
+const stations = readJSON("stations.json");
+const stationByName = Object.fromEntries(stations.map((s) => [s.name, s]));
 
 const districtBySlug = Object.fromEntries(districts.map((d) => [d.slug, d]));
 const areaBySlug = Object.fromEntries(areas.map((a) => [a.slug, a]));
@@ -159,6 +161,7 @@ const NAV = [
   { label: "서울 홈", path: "/" },
   { label: "생활권", path: "/#areas" },
   { label: "구별 안내", path: "/#districts" },
+  { label: "지하철역", path: "/#stations" },
   { label: "이용 장소", path: "/use/home/" },
   { label: "예약 전 확인", path: "/check/address/" },
 ];
@@ -224,6 +227,10 @@ function footer() {
     ...checks.map((c) => `<li><a href="/check/${c.slug}/">${esc(c.name)}</a></li>`),
     ...policies.map((p) => `<li><a href="/policy/${p.slug}/">${esc(p.name)}</a></li>`),
   ].join("");
+  const stationLinks = stations
+    .slice(0, 8)
+    .map((s) => `<li><a href="/station/${s.slug}/">${esc(s.name)}</a></li>`)
+    .join("");
   return `<footer class="site-footer"><div class="container">
     <div class="footer-cta">
       <div class="footer-cta__text">
@@ -243,6 +250,7 @@ function footer() {
       </div>
       <div class="footer-col"><h3>5대 생활권</h3><ul>${areaLinks}</ul></div>
       <div class="footer-col"><h3>구별 안내</h3><ul>${guLinks}<li><a href="/#districts">전체 25개 구 보기</a></li></ul></div>
+      <div class="footer-col"><h3>지하철역</h3><ul>${stationLinks}<li><a href="/#stations">주요 역 전체 보기</a></li></ul></div>
       <div class="footer-col"><h3>이용 장소</h3><ul>${useLinks}</ul></div>
       <div class="footer-col"><h3>예약 전 확인 · 운영 기준</h3><ul>${policyLinks}</ul></div>
     </div>
@@ -269,6 +277,17 @@ function faqBlock() {
 
 function checklistBlock() {
   return `<ul class="checklist">${content.checklist.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>`;
+}
+
+// 역명 목록 → 역 전용 페이지 링크(있을 때) 또는 태그
+function stationTags(names) {
+  return names
+    .map((n) =>
+      stationByName[n]
+        ? `<a href="/station/${stationByName[n].slug}/">${esc(n)}</a>`
+        : `<span class="tag">${esc(n)}</span>`
+    )
+    .join("");
 }
 
 const won = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -486,7 +505,16 @@ ${breadcrumbNav([{ name: "서울", path: "/" }])}
   <div class="grid grid--4" style="margin-top:1.5rem">${guCards}</div>
 </div></section>
 
-<section class="section alt" id="usecases"><div class="container">
+<section class="section alt" id="stations"><div class="container">
+  <span class="eyebrow">지하철역</span>
+  <h2>주요 지하철역 역세권 안내</h2>
+  <p class="lead" style="margin-top:.5rem">환승역은 역명 기준 한 페이지로 안내합니다. 가까운 역을 눌러 역세권 이용 기준을 확인하세요.</p>
+  <nav class="linklist" style="margin-top:1.5rem" aria-label="주요 지하철역">${stations
+    .map((s) => `<a href="/station/${s.slug}/">${esc(s.name)}</a>`)
+    .join("")}</nav>
+</div></section>
+
+<section class="section" id="usecases"><div class="container">
   <span class="eyebrow">이용 장소</span>
   <h2>이용 장소에 따라 확인할 내용이 다릅니다</h2>
   <div class="grid grid--3" style="margin-top:1.5rem">${useCards}</div>
@@ -571,7 +599,7 @@ ${hero(`
     .join("")}</div>
 
   <h2>대표 지하철역</h2>
-  <ul class="linklist" style="margin-top:1rem">${a.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
+  <ul class="linklist" style="margin-top:1rem">${stationTags(a.stations)}</ul>
 
   <h2>이용 장소별 안내</h2>
   <div class="grid grid--3" style="margin-top:1rem">${useCases
@@ -657,7 +685,7 @@ ${hero(`
   })()}</ul>
 
   <h2>가까운 지하철역</h2>
-  <ul class="linklist" style="margin-top:1rem">${d.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
+  <ul class="linklist" style="margin-top:1rem">${stationTags(d.stations)}</ul>
 
   <h2>이용 장소별 기준</h2>
   <div class="grid grid--2" style="margin-top:1rem">
@@ -745,7 +773,7 @@ ${hero(`
     .join("")}</nav>
 
   <h2>가까운 지하철역</h2>
-  <ul class="linklist" style="margin-top:1rem">${l.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
+  <ul class="linklist" style="margin-top:1rem">${stationTags(l.stations)}</ul>
 
   <h2>포함 행정동</h2>
   <ul class="linklist" style="margin-top:1rem">${l.dongs.map((x) => `<span class="tag">${esc(x)}</span>`).join("")}</ul>
@@ -1009,7 +1037,7 @@ ${hero(`
   </nav>
 
   <h2>가까운 지하철역</h2>
-  <ul class="linklist" style="margin-top:1rem">${dong.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
+  <ul class="linklist" style="margin-top:1rem">${stationTags(dong.stations)}</ul>
 
   <h2>${esc(dong.name)}에서 특히 확인할 점</h2>
   <p>${esc(BUILDING_GUIDE[dong.type] || BUILDING_GUIDE.residential)}</p>
@@ -1037,6 +1065,89 @@ ${hero(`
 </div></section>
 `;
   dongAudit.push({ district: dong.district, url, title, desc, text: textLen(body), body });
+  return layout({ title, desc, url, breadcrumb: trail, body });
+}
+
+/* ------------------------------------------------------------------ */
+/* page: station /station/<slug>/                                     */
+/* ------------------------------------------------------------------ */
+const stationAudit = [];
+function stationPage(st) {
+  const url = `/station/${st.slug}/`;
+  const life = st.lifeArea ? lifeBySlug[st.lifeArea] : null;
+  const gu = st.gu ? districtBySlug[st.gu] : null;
+  const area = gu ? areaBySlug[gu.area] : null;
+  const label = TYPE_LABEL[st.type] || "역세권";
+  const title = `${st.name} 출장마사지 · ${st.name}세권 예약 안내 | ${site.brand}`;
+  const desc = clamp80(`${st.name} 역세권 안내 · ${st.lines.join("·")} ${label}, 예약 전 확인사항 정리.`, url);
+  const trail = [
+    { name: "서울", path: "/" },
+    ...(area ? [{ name: area.name, path: `/area/${area.slug}/` }] : []),
+    { name: st.name, path: url },
+  ];
+
+  const others = stations
+    .filter((x) => x.slug !== st.slug && x.type === st.type)
+    .slice(0, 4)
+    .map((x) => `<a href="/station/${x.slug}/">${esc(x.name)}</a>`)
+    .join("");
+
+  const body = `
+${breadcrumbNav(trail)}
+${hero(`
+  <span class="eyebrow">지하철역 · 역세권</span>
+  <h1>${esc(st.name)} 출장마사지 · ${esc(st.name)}세권 예약 안내</h1>
+  <p>${esc(st.character.split(".")[0])}.</p>
+  <div class="hero__cta">
+    ${life ? `<a class="btn btn--ghost" href="/life/${life.slug}/">${esc(life.name)} 생활권</a>` : ""}
+    ${gu ? `<a class="btn btn--ghost" href="/${gu.slug}/">${esc(gu.name)} 안내</a>` : ""}
+    <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
+  </div>
+`)}
+
+<section class="section"><div class="container prose">
+  <h2>${esc(st.name)} 역세권 개요</h2>
+  <p>${esc(st.character)}</p>
+
+  <h2>운행 노선</h2>
+  <ul class="linklist" style="margin-top:1rem">${st.lines.map((l) => `<span class="tag">${esc(l)}</span>`).join("")}</ul>
+
+  <h2>가까운 지역</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="가까운 지역">
+    ${life ? `<a href="/life/${life.slug}/">${esc(life.name)} 생활권 안내</a>` : ""}
+    ${gu ? `<a href="/${gu.slug}/">${esc(gu.name)} 생활권 안내</a>` : ""}
+    ${area ? `<a href="/area/${area.slug}/">${esc(area.name)} 안내</a>` : ""}
+  </nav>
+
+  <h2>${esc(st.name)}에서 확인할 점</h2>
+  <p>${esc(BUILDING_GUIDE[st.type] || BUILDING_GUIDE.transit)}</p>
+  <p>${esc(st.point)}</p>
+  <div class="notice" style="margin-top:1rem">${esc(st.name)}은 역명 기준 한 페이지로만 안내합니다. 같은 역의 출구별·노선별 페이지를 따로 만들지 않아 중복을 줄이고, 실제 방문은 정확한 건물 주소로 확인합니다.</div>
+
+  <h2>이용 장소별 안내</h2>
+  <div class="grid grid--3" style="margin-top:1rem">
+    <a class="card" href="/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
+    <a class="card" href="/use/hotel/"><span class="card__title">호텔·숙소 이용</span><p class="card__meta">숙소 방문 정책과 객실 출입 여부를 확인합니다.</p></a>
+    <a class="card" href="/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관·엘리베이터 인증과 관리 규정을 확인합니다.</p></a>
+  </div>
+
+  <h2 id="checklist">${esc(st.name)} 예약 전 확인</h2>
+  <ul class="checklist" style="margin-top:1rem;max-width:720px">${(TYPE_CHECKS[st.type] || TYPE_CHECKS.transit)
+    .map((c) => `<li>${esc(c)}</li>`)
+    .join("")}</ul>
+  <div class="notice" style="margin-top:1.25rem">개인정보는 예약 확인과 연락에 필요한 최소 정보만 안내하며, 불법·선정적 서비스는 제공하거나 안내하지 않습니다.</div>
+
+  <h2>${esc(st.name)} 안내 기준</h2>
+  <div style="margin-top:1rem">${whoHowWhy(`${st.name} 역세권`)}</div>
+
+  <h2>다른 주요 역</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="다른 역">
+    ${others}
+    <a href="/use/station-area/">역세권 이용 안내</a>
+  </nav>
+</div></section>
+`;
+  stationAudit.push({ url, body });
   return layout({ title, desc, url, breadcrumb: trail, body });
 }
 
@@ -1124,6 +1235,7 @@ ${floatingCall()}
     emit(path.join(dg.district, dg.slug), `/${dg.district}/${dg.slug}/`, adminDongPage(dg))
   );
   lifeAreas.forEach((l) => emit(path.join("life", l.slug), `/life/${l.slug}/`, lifePage(l)));
+  stations.forEach((st) => emit(path.join("station", st.slug), `/station/${st.slug}/`, stationPage(st)));
   useCases.forEach((u) => emit(path.join("use", u.slug), `/use/${u.slug}/`, usePage(u)));
   checks.forEach((c) => emit(path.join("check", c.slug), `/check/${c.slug}/`, checkPage(c)));
   policies.forEach((p) => emit(path.join("policy", p.slug), `/policy/${p.slug}/`, policyPage(p)));
@@ -1160,6 +1272,16 @@ ${floatingCall()}
   }
   audit.push(`  ${maxJ < 0.6 ? "✓" : "⚠"} 행정동 본문 최대 유사도(Jaccard) ${maxJ.toFixed(2)} ${maxPair ? "(" + maxPair + ")" : ""}`);
 
+  // 3b) 역 페이지 본문 near-duplicate
+  let sMax = 0, sPair = "";
+  const sArr = stationAudit.map((a) => ({ url: a.url, sh: shingles(a.body) }));
+  for (let i = 0; i < sArr.length; i++)
+    for (let j = i + 1; j < sArr.length; j++) {
+      const J = jaccard(sArr[i].sh, sArr[j].sh);
+      if (J > sMax) { sMax = J; sPair = `${sArr[i].url} ~ ${sArr[j].url}`; }
+    }
+  audit.push(`  ${sMax < 0.6 ? "✓" : "⚠"} 지하철역 본문 최대 유사도(Jaccard) ${sMax.toFixed(2)} ${sPair ? "(" + sPair + ")" : ""}`);
+
   // sitemap.xml
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -1180,7 +1302,7 @@ ${urls
 
   console.log(`✔ 빌드 완료: 색인 ${urls.length}개 (+ 루트 리다이렉트)`);
   console.log(
-    `  · 메인 1 · 생활권(권역) ${areas.length} · 구 ${districts.length} · 행정동 ${adminDongs.length} · 생활권(동네) ${lifeAreas.length} · 이용 장소 ${useCases.length} · 예약 전 확인 ${checks.length} · 운영 기준 ${policies.length}`
+    `  · 메인 1 · 생활권(권역) ${areas.length} · 구 ${districts.length} · 행정동 ${adminDongs.length} · 생활권(동네) ${lifeAreas.length} · 지하철역 ${stations.length} · 이용 장소 ${useCases.length} · 예약 전 확인 ${checks.length} · 운영 기준 ${policies.length}`
   );
   console.log(
     warnings.length ? "\n" + warnings.join("\n") : "  · 모든 meta description 80자 이내 ✓"
