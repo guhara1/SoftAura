@@ -22,10 +22,21 @@ const useCases = readJSON("use-cases.json");
 const checks = readJSON("checks.json");
 const policies = readJSON("policies.json");
 const lifeAreas = readJSON("life-areas.json");
+const adminDongs = readJSON("admin-dongs.json");
 
 const districtBySlug = Object.fromEntries(districts.map((d) => [d.slug, d]));
 const areaBySlug = Object.fromEntries(areas.map((a) => [a.slug, a]));
 const useBySlug = Object.fromEntries(useCases.map((u) => [u.slug, u]));
+const lifeBySlug = Object.fromEntries(lifeAreas.map((l) => [l.slug, l]));
+const dongsByDistrict = {};
+adminDongs.forEach((d) => {
+  (dongsByDistrict[d.district] = dongsByDistrict[d.district] || []).push(d);
+});
+const dongsByLife = {};
+adminDongs.forEach((d) => {
+  if (d.lifeArea) (dongsByLife[d.lifeArea] = dongsByLife[d.lifeArea] || []).push(d);
+});
+const dongBySlug = Object.fromEntries(adminDongs.map((d) => [`${d.district}/${d.slug}`, d]));
 const lifeByArea = {};
 lifeAreas.forEach((l) => {
   (lifeByArea[l.area] = lifeByArea[l.area] || []).push(l);
@@ -287,6 +298,8 @@ function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, i
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d14">
+<meta name="color-scheme" content="dark">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${abs(url)}">
@@ -549,7 +562,16 @@ ${breadcrumbNav(trail)}
   }
 
   <h2>대표 행정동</h2>
-  <ul class="linklist" style="margin-top:1rem">${d.adminDongs.map((x) => `<span class="tag">${esc(x)}</span>`).join("")}</ul>
+  <ul class="linklist" style="margin-top:1rem">${(() => {
+    const pageByName = Object.fromEntries((dongsByDistrict[d.slug] || []).map((x) => [x.name, x]));
+    return d.adminDongs
+      .map((x) =>
+        pageByName[x]
+          ? `<a href="/seoul/${d.slug}/${pageByName[x].slug}/">${esc(x)} 방문 안내</a>`
+          : `<span class="tag">${esc(x)}</span>`
+      )
+      .join("");
+  })()}</ul>
 
   <h2>가까운 지하철역</h2>
   <ul class="linklist" style="margin-top:1rem">${d.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
@@ -662,6 +684,15 @@ ${breadcrumbNav(trail)}
 
   <h2>${esc(l.name)} 안내 기준</h2>
   <div style="margin-top:1rem">${whoHowWhy(l.name)}</div>
+
+  ${
+    (dongsByLife[l.slug] || []).length
+      ? `<h2>${esc(l.name)} 주요 행정동</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="주요 행정동">${(dongsByLife[l.slug] || [])
+          .map((dg) => `<a href="/seoul/${dg.district}/${dg.slug}/">${esc(dg.name)} 방문 안내</a>`)
+          .join("")}</nav>`
+      : ""
+  }
 
   <h2>인접 생활권 보기</h2>
   <nav class="linklist" style="margin-top:1rem" aria-label="인접 생활권">
@@ -813,6 +844,91 @@ ${breadcrumbNav(trail)}
 }
 
 /* ------------------------------------------------------------------ */
+/* page: admin-dong /seoul/<gu>/<dong>/                               */
+/* ------------------------------------------------------------------ */
+const BUILDING_GUIDE = {
+  business: "업무지구 성격이 강해 건물 보안 게이트·방문증·엘리베이터 인증 등 출입 절차를 미리 확인하는 것이 좋습니다.",
+  residential: "주거지가 중심이라 공동현관 방식과 동·호수, 방문 가능 시간대를 정확히 안내하면 이동이 원활합니다.",
+  commercial: "상권과 오피스텔이 섞여 있어 도로명 주소와 건물명, 층·호실을 함께 확인하는 것이 좋습니다.",
+  nightlife: "숙소·상권이 밀집해 숙소 방문 정책과 야간 예약 가능 시간을 함께 확인하는 것이 좋습니다.",
+  university: "대학가 원룸·오피스텔이 많아 비슷한 건물이 이어지므로 건물명과 호수, 공동현관 방식을 정확히 확인해야 합니다.",
+  lodging: "호텔·숙소 비중이 높아 객실 출입 가능 여부와 로비 확인 절차를 먼저 확인하는 것이 좋습니다.",
+};
+
+function adminDongPage(dong) {
+  const gu = districtBySlug[dong.district];
+  const area = areaBySlug[gu.area];
+  const life = dong.lifeArea ? lifeBySlug[dong.lifeArea] : null;
+  const url = `/seoul/${gu.slug}/${dong.slug}/`;
+  const title = `${dong.name} 출장마사지 · ${gu.name} 방문 안내 | ${site.brand}`;
+  const desc = clamp80(`${dong.name}(${gu.name}) 방문 안내 · 가까운 역과 이용 장소, 확인사항을 정리했습니다.`, url);
+  const trail = [
+    { name: "서울", path: "/seoul/" },
+    { name: area.name, path: `/seoul/area/${area.slug}/` },
+    { name: gu.name, path: `/seoul/${gu.slug}/` },
+    { name: dong.name, path: url },
+  ];
+
+  const siblings = (dongsByDistrict[dong.district] || [])
+    .filter((x) => x.slug !== dong.slug)
+    .slice(0, 5)
+    .map((x) => `<a href="/seoul/${gu.slug}/${x.slug}/">${esc(x.name)} 방문 안내</a>`)
+    .join("");
+
+  const body = `
+${breadcrumbNav(trail)}
+<section class="hero"><div class="container hero__inner">
+  <span class="eyebrow">${esc(gu.name)} · 행정동</span>
+  <h1>${esc(dong.name)} 출장마사지 · ${esc(gu.name)} 방문 안내</h1>
+  <p>${esc(dong.character.split(".")[0])}.</p>
+  <div class="hero__cta">
+    <a class="btn btn--ghost" href="/seoul/${gu.slug}/">${esc(gu.name)} 안내</a>
+    ${life ? `<a class="btn btn--ghost" href="/seoul/life/${life.slug}/">${esc(life.name)} 생활권</a>` : ""}
+    <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
+  </div>
+</div></section>
+
+<section class="section"><div class="container prose">
+  <h2>${esc(dong.name)} 위치와 성격</h2>
+  <p>${esc(dong.character)}</p>
+
+  <h2>상위 지역 연결</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="상위 지역">
+    <a href="/seoul/${gu.slug}/">${esc(gu.name)} 생활권 안내</a>
+    <a href="/seoul/area/${area.slug}/">${esc(area.name)} 안내</a>
+    ${life ? `<a href="/seoul/life/${life.slug}/">${esc(life.name)} 생활권 안내</a>` : ""}
+  </nav>
+
+  <h2>가까운 지하철역</h2>
+  <ul class="linklist" style="margin-top:1rem">${dong.stations.map((s) => `<span class="tag">${esc(s)}</span>`).join("")}</ul>
+
+  <h2>${esc(dong.name)}에서 특히 확인할 점</h2>
+  <p>${esc(BUILDING_GUIDE[dong.type] || BUILDING_GUIDE.residential)}</p>
+  <p>${esc(dong.point)}</p>
+  <div class="grid grid--3" style="margin-top:1rem">
+    <a class="card" href="/seoul/use/home/"><span class="card__title">자택 이용</span><p class="card__meta">공동현관과 건물 출입 방식을 미리 확인합니다.</p></a>
+    <a class="card" href="/seoul/use/officetel/"><span class="card__title">오피스텔 이용</span><p class="card__meta">공동현관·엘리베이터 인증과 관리 규정을 확인합니다.</p></a>
+    <a class="card" href="/seoul/use/station-area/"><span class="card__title">역세권 이용</span><p class="card__meta">가까운 역과 정확한 건물 주소를 함께 확인합니다.</p></a>
+  </div>
+
+  <h2 id="checklist">예약 전 체크리스트</h2>
+  <div style="margin-top:1rem;max-width:720px">${checklistBlock()}</div>
+  <div class="notice" style="margin-top:1.25rem">개인정보는 예약 확인과 연락에 필요한 최소 정보만 안내하며, 불법·선정적 서비스는 제공하거나 안내하지 않습니다.</div>
+
+  <h2>${esc(dong.name)} 안내 기준</h2>
+  <div style="margin-top:1rem">${whoHowWhy(`${gu.name} ${dong.name}`)}</div>
+
+  <h2>${esc(gu.name)} 인접 행정동</h2>
+  <nav class="linklist" style="margin-top:1rem" aria-label="인접 행정동">
+    ${siblings}
+    <a href="/seoul/check/address/">방문 주소 확인</a>
+  </nav>
+</div></section>
+`;
+  return layout({ title, desc, url, breadcrumb: trail, body });
+}
+
+/* ------------------------------------------------------------------ */
 /* write helpers                                                      */
 /* ------------------------------------------------------------------ */
 function writePage(relDir, html) {
@@ -851,6 +967,9 @@ function build() {
 
   areas.forEach((a) => emit(path.join("seoul", "area", a.slug), `/seoul/area/${a.slug}/`, areaPage(a)));
   districts.forEach((d) => emit(path.join("seoul", d.slug), `/seoul/${d.slug}/`, districtPage(d)));
+  adminDongs.forEach((dg) =>
+    emit(path.join("seoul", dg.district, dg.slug), `/seoul/${dg.district}/${dg.slug}/`, adminDongPage(dg))
+  );
   lifeAreas.forEach((l) => emit(path.join("seoul", "life", l.slug), `/seoul/life/${l.slug}/`, lifePage(l)));
   useCases.forEach((u) => emit(path.join("seoul", "use", u.slug), `/seoul/use/${u.slug}/`, usePage(u)));
   checks.forEach((c) => emit(path.join("seoul", "check", c.slug), `/seoul/check/${c.slug}/`, checkPage(c)));
@@ -876,7 +995,7 @@ ${urls
 
   console.log(`✔ 빌드 완료: 색인 ${urls.length}개 (+ 루트 리다이렉트)`);
   console.log(
-    `  · 메인 1 · 생활권(권역) ${areas.length} · 구 ${districts.length} · 생활권(동네) ${lifeAreas.length} · 이용 장소 ${useCases.length} · 예약 전 확인 ${checks.length} · 운영 기준 ${policies.length}`
+    `  · 메인 1 · 생활권(권역) ${areas.length} · 구 ${districts.length} · 행정동 ${adminDongs.length} · 생활권(동네) ${lifeAreas.length} · 이용 장소 ${useCases.length} · 예약 전 확인 ${checks.length} · 운영 기준 ${policies.length}`
   );
   console.log(
     warnings.length ? "\n" + warnings.join("\n") : "  · 모든 meta description 80자 이내 ✓"
