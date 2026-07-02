@@ -176,6 +176,25 @@ function header() {
 const TELEGRAM_ICON =
   '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9.78 15.6 9.6 19.2c.36 0 .52-.16.71-.35l1.7-1.63 3.53 2.58c.65.36 1.11.17 1.28-.6l2.32-10.9c.21-.96-.35-1.34-.98-1.1L4.4 10.5c-.94.36-.92.88-.16 1.11l3.5 1.09 8.14-5.13c.38-.25.73-.11.44.15L9.78 15.6Z"/></svg>';
 
+const PHONE_ICON =
+  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.3 1L6.6 10.8Z"/></svg>';
+
+// 모바일 플로팅 전화 버튼(전 페이지, 항상 노출) — 탭 시 전화연결
+function floatingCall() {
+  return `<a class="fab-call" href="tel:${site.phone.replace(/-/g, "")}" aria-label="전화 예약 ${esc(site.phone)}">${PHONE_ICON}<span class="fab-call__label">전화예약</span></a>`;
+}
+
+// 히어로 우측 이미지(설정 시 전 페이지 공통 노출)
+function heroMedia(eager) {
+  if (!site.heroImage) return "";
+  return `<div class="hero__media"><img src="${site.heroImage}" alt="${esc(site.heroImageAlt || site.brand)}" width="640" height="480" ${eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"'} decoding="async"></div>`;
+}
+
+// 히어로 래퍼: 좌측 내용 + 우측 이미지(2단)
+function hero(innerHtml, eager) {
+  return `<section class="hero hero--split"><div class="container hero__grid"><div class="hero__inner">${innerHtml}</div>${heroMedia(eager)}</div></section>`;
+}
+
 function inquiryButtons() {
   return site.inquiries
     .map(
@@ -347,6 +366,7 @@ ${body}
 ${pricingSection()}
 </main>
 ${footer()}
+${floatingCall()}
 </body>
 </html>`;
 }
@@ -496,11 +516,11 @@ function areaPage(a) {
 
   const body = `
 ${breadcrumbNav(trail)}
-<section class="hero"><div class="container hero__inner">
+${hero(`
   <span class="eyebrow">서울 5대 생활권</span>
   <h1>${esc(a.name)} 생활권 안내</h1>
   <p>${esc(a.summary)}</p>
-</div></section>
+`)}
 
 <section class="section"><div class="container prose">
   <h2>${esc(a.name)} 개요</h2>
@@ -565,7 +585,7 @@ function districtPage(d) {
 
   const body = `
 ${breadcrumbNav(trail)}
-<section class="hero"><div class="container hero__inner">
+${hero(`
   <span class="eyebrow">${esc(area.name)}</span>
   <h1>${esc(d.name)} 출장마사지 · 생활권별 예약 안내</h1>
   <p>${esc(d.focus)}. 대표 생활권과 가까운 역, 이용 장소 기준을 함께 확인하세요.</p>
@@ -573,7 +593,7 @@ ${breadcrumbNav(trail)}
     <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
     <a class="btn btn--ghost" href="/area/${area.slug}/">${esc(area.name)} 보기</a>
   </div>
-</div></section>
+`)}
 
 <section class="section"><div class="container prose">
   <h2>${esc(d.name)} 지역 개요</h2>
@@ -672,7 +692,7 @@ function lifePage(l) {
 
   const body = `
 ${breadcrumbNav(trail)}
-<section class="hero"><div class="container hero__inner">
+${hero(`
   <span class="eyebrow">${esc(area.name)} · 생활권</span>
   <h1>${esc(l.name)} 출장마사지 생활권 안내</h1>
   <p>${esc(l.character.split(".")[0])}.</p>
@@ -680,7 +700,7 @@ ${breadcrumbNav(trail)}
     ${parentGus[0] ? `<a class="btn btn--ghost" href="/${parentGus[0].slug}/">${esc(parentGus[0].name)} 안내</a>` : ""}
     <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
   </div>
-</div></section>
+`)}
 
 <section class="section"><div class="container prose">
   <h2>${esc(l.name)} 생활권 개요</h2>
@@ -754,11 +774,11 @@ function usePage(u) {
 
   const body = `
 ${breadcrumbNav(trail)}
-<section class="hero"><div class="container hero__inner">
+${hero(`
   <span class="eyebrow">이용 장소 안내</span>
   <h1>${esc(u.h1)}</h1>
   <p>${esc(u.intro.split(".")[0])}.</p>
-</div></section>
+`)}
 
 <section class="section"><div class="container prose">
   <h2>${esc(u.name)}, 왜 확인이 필요한가요?</h2>
@@ -805,11 +825,11 @@ function checkPage(c) {
 
   const body = `
 ${breadcrumbNav(trail)}
-<section class="hero"><div class="container hero__inner">
+${hero(`
   <span class="eyebrow">예약 전 확인</span>
   <h1>${esc(c.h1)}</h1>
   <p>${esc(c.intro.split(".")[0])}.</p>
-</div></section>
+`)}
 
 <section class="section"><div class="container prose">
   <h2>${esc(c.name)}가 왜 중요한가요?</h2>
@@ -854,11 +874,11 @@ function policyPage(p) {
 
   const body = `
 ${breadcrumbNav(trail)}
-<section class="hero"><div class="container hero__inner">
+${hero(`
   <span class="eyebrow">운영 기준</span>
   <h1>${esc(p.h1)}</h1>
   <p>${esc(p.desc)}</p>
-</div></section>
+`)}
 
 <section class="section"><div class="container prose">
   ${p.sections.map((s) => `<h2>${esc(s.h)}</h2><p>${esc(s.p)}</p>`).join("")}
@@ -933,7 +953,7 @@ function adminDongPage(dong) {
 
   const body = `
 ${breadcrumbNav(trail)}
-<section class="hero"><div class="container hero__inner">
+${hero(`
   <span class="eyebrow">${esc(gu.name)} · 행정동</span>
   <h1>${esc(dong.name)} 출장마사지 · ${esc(gu.name)} 방문 안내</h1>
   <p>${esc(dong.character.split(".")[0])}.</p>
@@ -942,7 +962,7 @@ ${breadcrumbNav(trail)}
     ${life ? `<a class="btn btn--ghost" href="/life/${life.slug}/">${esc(life.name)} 생활권</a>` : ""}
     <a class="btn btn--primary" href="#checklist">예약 전 확인</a>
   </div>
-</div></section>
+`)}
 
 <section class="section"><div class="container prose">
   <h2>${esc(dong.name)} 위치와 성격</h2>
@@ -1038,6 +1058,7 @@ ${header()}
 </nav>
 </div></section></main>
 ${footer()}
+${floatingCall()}
 </body></html>`
   );
 
