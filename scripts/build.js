@@ -184,11 +184,62 @@ function checklistBlock() {
   return `<ul class="checklist">${content.checklist.map((c) => `<li>${esc(c)}</li>`).join("")}</ul>`;
 }
 
+const won = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+function pricingSection() {
+  const { title, subtitle, note, courses } = content.pricing;
+  const cards = courses
+    .map((c) => {
+      const featured = c.featured ? " price-card--featured" : "";
+      const badge = c.badge ? `<span class="price-card__badge">${esc(c.badge)}</span>` : "";
+      const btn = c.featured ? "btn--inquiry" : "btn--ghost";
+      return `<div class="price-card${featured}">
+        ${badge}
+        <h3 class="price-card__name">${esc(c.name)}</h3>
+        <p class="price-card__price"><strong>${won(c.price)}</strong><span>원</span></p>
+        <p class="price-card__dur">${esc(c.duration)}</p>
+        <p class="price-card__desc">${esc(c.desc)}</p>
+        <a class="btn ${btn} price-card__btn" href="${site.telegram.url}" target="_blank" rel="noopener">예약 문의</a>
+      </div>`;
+    })
+    .join("");
+  return `<section class="section pricing" id="pricing" aria-label="이용 코스와 요금"><div class="container">
+    <div class="pricing__head">
+      <h2>${esc(title)}</h2>
+      <p>${esc(subtitle)}</p>
+    </div>
+    <div class="price-grid">${cards}</div>
+    <p class="pricing__note">${esc(note)} <a href="${site.telegram.url}" target="_blank" rel="noopener">상세 요금 안내 보기 →</a></p>
+  </div></section>`;
+}
+
+function pricingSchema() {
+  return {
+    "@type": "Service",
+    name: `${site.brand} 방문 케어 코스`,
+    serviceType: "방문 케어",
+    provider: { "@type": "Organization", name: site.brand, url: site.siteUrl },
+    areaServed: { "@type": "City", name: "서울" },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "이용 코스와 요금",
+      itemListElement: content.pricing.courses.map((c) => ({
+        "@type": "Offer",
+        name: c.name,
+        price: c.price,
+        priceCurrency: "KRW",
+        description: c.desc,
+        availability: "https://schema.org/InStock",
+      })),
+    },
+  };
+}
+
 /* ------------------------------------------------------------------ */
 /* layout                                                             */
 /* ------------------------------------------------------------------ */
 function layout({ title, desc, url, image, breadcrumb, extraSchema = [], body, includeFaqSchema }) {
-  const graph = [orgSchema, webPageSchema({ title, desc, url, image })];
+  const graph = [orgSchema, webPageSchema({ title, desc, url, image }), pricingSchema()];
   if (breadcrumb) graph.push(breadcrumbSchema(breadcrumb));
   if (includeFaqSchema) graph.push(faqSchema(content.faq));
   graph.push(...extraSchema);
@@ -220,6 +271,7 @@ ${ld}
 ${header()}
 <main id="main">
 ${body}
+${pricingSection()}
 </main>
 ${footer()}
 </body>

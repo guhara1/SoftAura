@@ -234,6 +234,52 @@ p { margin: 0 0 1em; }
   padding: 1rem 1.25rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--ink-700); }
 
 /* ---------------------------------------------------------------------
+   6b. Pricing (component overlay) — 다크 테마 요금표 (전 페이지 공통)
+   --------------------------------------------------------------------- */
+.pricing {
+  background:
+    radial-gradient(900px 380px at 50% -10%, rgba(255, 106, 26, 0.14), transparent 60%),
+    #0f1420;
+  color: #cfd4de;
+}
+.pricing__head { text-align: center; max-width: 640px; margin-inline: auto; }
+.pricing__head h2 { color: #fff; }
+.pricing__head p { color: #9aa2b1; margin: 0.5rem 0 0; }
+.price-grid {
+  display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  max-width: 940px; margin: 2.25rem auto 0; align-items: stretch;
+}
+.price-card {
+  position: relative; background: #1a2130; border: 1px solid #2a3243; border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem; text-align: center; display: flex; flex-direction: column; gap: 0.4rem;
+}
+.price-card--featured {
+  background: linear-gradient(180deg, #23293a 0%, #1a2130 100%);
+  border-color: var(--brand-orange);
+  box-shadow: 0 0 0 1px var(--brand-orange), 0 24px 60px -28px rgba(255, 106, 26, 0.6);
+  transform: translateY(-8px);
+}
+.price-card__badge {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: var(--brand-orange); color: #fff; font-size: 0.75rem; font-weight: 800;
+  padding: 0.25rem 0.85rem; border-radius: 999px; box-shadow: var(--shadow-md);
+}
+.price-card__name { color: #fff; font-size: 1.15rem; margin: 0.25rem 0 0.5rem; }
+.price-card__price { margin: 0; color: #fff; font-weight: 800; letter-spacing: -0.02em; }
+.price-card__price strong { font-size: clamp(1.9rem, 4vw, 2.6rem); }
+.price-card__price span { font-size: 0.95rem; color: #9aa2b1; margin-left: 0.15rem; }
+.price-card__dur { color: var(--brand-orange); font-weight: 700; margin: 0.25rem 0; }
+.price-card__desc { color: #9aa2b1; font-size: var(--fs-sm); margin: 0 0 1.25rem; }
+.price-card__btn { width: 100%; margin-top: auto; }
+.price-card:not(.price-card--featured) .price-card__btn {
+  background: transparent; color: #e6ddcf; border: 1px solid #3a4356;
+}
+.price-card:not(.price-card--featured) .price-card__btn:hover { border-color: var(--brand-orange); color: #fff; }
+.pricing__note { text-align: center; margin: 2rem 0 0; font-size: var(--fs-sm); color: #8891a1; }
+.pricing__note a { color: var(--brand-orange); font-weight: 700; }
+@media (max-width: 760px) { .price-card--featured { transform: none; } }
+
+/* ---------------------------------------------------------------------
    7. Footer (component overlay) — 오렌지 문의 버튼 포함
    --------------------------------------------------------------------- */
 .site-footer { background: var(--surface-ink); color: #cfc7ba; padding-block: clamp(2.5rem, 6vw, 4rem) 2rem; margin-top: var(--space-section); }
