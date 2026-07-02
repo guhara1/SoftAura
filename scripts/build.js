@@ -1015,6 +1015,33 @@ function build() {
 </head><body><p><a href="/seoul/">서울 지역 안내로 이동</a></p></body></html>`
   );
 
+  // 브랜드 404 (Netlify가 publish/404.html을 자동 서빙)
+  fs.writeFileSync(
+    path.join(DIST, "404.html"),
+    `<!doctype html><html lang="ko"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0d14"><meta name="color-scheme" content="dark">
+<title>페이지를 찾을 수 없습니다 | ${esc(site.brand)}</title>
+<meta name="robots" content="noindex, follow">
+<link rel="stylesheet" href="/assets/main.css">
+</head><body>
+${header()}
+<main id="main"><section class="section"><div class="container prose" style="text-align:center;max-width:640px">
+<span class="eyebrow">404</span>
+<h1>페이지를 찾을 수 없습니다</h1>
+<p>주소가 바뀌었거나 존재하지 않는 페이지입니다. 아래에서 원하는 지역을 다시 찾아보세요.</p>
+<nav class="linklist" style="justify-content:center;margin-top:1.5rem" aria-label="바로가기">
+<a href="/seoul/">서울 전체 지역 안내</a>
+<a href="/seoul/#areas">5대 생활권</a>
+<a href="/seoul/#districts">25개 구</a>
+<a href="/seoul/use/home/">이용 장소</a>
+<a href="/seoul/check/address/">예약 전 확인</a>
+</nav>
+</div></section></main>
+${footer()}
+</body></html>`
+  );
+
   emit("seoul", "/seoul/", mainPage());
 
   areas.forEach((a) => emit(path.join("seoul", "area", a.slug), `/seoul/area/${a.slug}/`, areaPage(a)));

@@ -1,0 +1,14 @@
+# Netlify 배포 설정 — 정적 사이트 빌드 후 dist/ 발행
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# 루트 진입 시 서울 메인으로
+[[redirects]]
+  from = "/"
+  to = "/seoul/"
+  status = 301
+  force = false
