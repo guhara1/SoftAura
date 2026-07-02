@@ -273,6 +273,31 @@ function checklistBlock() {
 
 const won = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
+function stars(n) {
+  return `<span class="stars" aria-label="별점 ${n}점 만점에 5점">${"★".repeat(n)}<span class="stars__off">${"★".repeat(5 - n)}</span></span>`;
+}
+
+function reviewsSection() {
+  const rv = content.reviews || [];
+  if (!rv.length) return "";
+  const avg = (rv.reduce((s, r) => s + r.rating, 0) / rv.length).toFixed(1);
+  const cards = rv
+    .map(
+      (r) => `<figure class="review">
+        <div class="review__head">${stars(r.rating)}<span class="review__date">${esc(r.date)}</span></div>
+        <blockquote class="review__text">${esc(r.text)}</blockquote>
+        <figcaption class="review__by">${esc(r.name)} 고객님</figcaption>
+      </figure>`
+    )
+    .join("");
+  return `<section class="section" id="reviews"><div class="container">
+    <span class="eyebrow">이용 후기</span>
+    <h2>고객님들이 남겨주신 이용 후기</h2>
+    <p class="lead" style="margin-top:.5rem">고객이 직접 남긴 후기를 가감 없이 보여 드립니다. 평균 별점 ${avg} / 5 · 후기 ${rv.length}건</p>
+    <div class="review-grid" style="margin-top:1.75rem">${cards}</div>
+  </div></section>`;
+}
+
 function pricingSection() {
   const { title, subtitle, note, courses } = content.pricing;
   const cards = courses
@@ -466,6 +491,8 @@ ${breadcrumbNav([{ name: "서울", path: "/" }])}
   <h2>이용 장소에 따라 확인할 내용이 다릅니다</h2>
   <div class="grid grid--3" style="margin-top:1.5rem">${useCards}</div>
 </div></section>
+
+${reviewsSection()}
 
 <section class="section" id="checklist"><div class="container">
   <span class="eyebrow">예약 전 확인</span>

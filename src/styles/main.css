@@ -224,6 +224,19 @@ p { margin: 0 0 1em; }
 .faq details[open] summary::after { content: "－"; }
 .faq p { margin: 0 0 0.8rem; color: var(--color-muted); }
 
+/* Reviews / 후기 */
+.review-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+.review {
+  margin: 0; background: var(--surface); border: 1px solid var(--color-border);
+  border-radius: var(--radius); padding: 1.4rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;
+}
+.review__head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.review__date { font-size: 0.8rem; color: var(--ink-400); }
+.stars { color: var(--brand-orange); letter-spacing: 1px; font-size: 0.95rem; }
+.stars__off { color: var(--line-strong); }
+.review__text { margin: 0; color: var(--ink-700); font-size: var(--fs-sm); line-height: 1.7; }
+.review__by { color: var(--ink-500); font-size: 0.82rem; font-weight: 600; }
+
 /* Who-How-Why block */
 .whw { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 .whw > div { background: var(--surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 1.25rem; }
